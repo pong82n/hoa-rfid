@@ -3,19 +3,20 @@
 
 class SFSHOAApp {
     constructor() {
-        this.STORAGE_KEY = 'sfsph1_hoa_data_v4'; // bumped to v4 for streamlined auto-visitor ID capture
+        this.STORAGE_KEY = 'sfsph1_hoa_data_v5'; // bumped to v5 for dual logs windows
         this.state = {
             community: null,
             vehicles: [],
-            visitors: [],
-            gateLogs: [],
+            homeownerLogs: [],
+            visitorLogs: [],
             activeFilter: 'all',
             searchQuery: '',
             selectedVehicleForDecal: null,
             audioEnabled: true,
             tempOwnerImage: '',
             tempVehicleImage: '',
-            currentAutoVisitor: null
+            currentAutoVisitor: null,
+            selectedVisitorDate: 'all' // 'all' or specific 'YYYY-MM-DD'
         };
 
         this.audioCtx = null;
@@ -29,7 +30,9 @@ class SFSHOAApp {
         this.initImageUploads();
         this.renderStats();
         this.renderVehiclesTable();
-        this.renderGateLogs();
+        this.renderHomeownerLogs();
+        this.renderVisitorLogs();
+        this.renderVisitorDailyTotals();
         this.renderRegistrationQRCode();
         this.populateGateSimulatorDropdown();
         this.checkUrlForAction();
@@ -43,8 +46,8 @@ class SFSHOAApp {
                 const parsed = JSON.parse(stored);
                 this.state.community = parsed.community || SFS_INITIAL_DATA.community;
                 this.state.vehicles = parsed.vehicles || SFS_INITIAL_DATA.vehicles;
-                this.state.visitors = parsed.visitors || SFS_INITIAL_DATA.visitors || [];
-                this.state.gateLogs = parsed.gateLogs || SFS_INITIAL_DATA.gateLogs;
+                this.state.homeownerLogs = parsed.homeownerLogs || SFS_INITIAL_DATA.homeownerLogs || [];
+                this.state.visitorLogs = parsed.visitorLogs || SFS_INITIAL_DATA.visitorLogs || [];
                 return;
             } catch (e) {
                 console.warn('Failed parsing stored HOA data, loading defaults.', e);
@@ -53,8 +56,8 @@ class SFSHOAApp {
         // Fallback to initial seed data
         this.state.community = SFS_INITIAL_DATA.community;
         this.state.vehicles = JSON.parse(JSON.stringify(SFS_INITIAL_DATA.vehicles));
-        this.state.visitors = JSON.parse(JSON.stringify(SFS_INITIAL_DATA.visitors || []));
-        this.state.gateLogs = JSON.parse(JSON.stringify(SFS_INITIAL_DATA.gateLogs));
+        this.state.homeownerLogs = JSON.parse(JSON.stringify(SFS_INITIAL_DATA.homeownerLogs || []));
+        this.state.visitorLogs = JSON.parse(JSON.stringify(SFS_INITIAL_DATA.visitorLogs || []));
         this.saveData();
     }
 
@@ -62,8 +65,8 @@ class SFSHOAApp {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
             community: this.state.community,
             vehicles: this.state.vehicles,
-            visitors: this.state.visitors,
-            gateLogs: this.state.gateLogs
+            homeownerLogs: this.state.homeownerLogs,
+            visitorLogs: this.state.visitorLogs
         }));
     }
 
@@ -320,7 +323,6 @@ class SFSHOAApp {
         const modal = document.getElementById('visitorModal');
         if (!modal) return;
 
-        // Auto-generate realistic captured plate and driver's valid ID
         const samplePlates = ['NBD 3841', 'WXY 9214', 'NDX 7789', 'CBA 4910', 'ZAB 8823', 'NBC 6120'];
         const sampleIds = [
             'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
@@ -345,7 +347,6 @@ class SFSHOAApp {
 
         const finalIdPhoto = sampleIds[chosenIndex % sampleIds.length];
 
-        // Store the auto-assembled visitor object
         this.state.currentAutoVisitor = {
             plateNumber: finalPlate,
             driverIdPhoto: finalIdPhoto,
@@ -355,7 +356,6 @@ class SFSHOAApp {
             vehicleType: autoData.type
         };
 
-        // Render ONLY Captured Plate Number and Valid ID in the modal
         const plateEl = document.getElementById('visitorCapturedPlate');
         if (plateEl) plateEl.textContent = finalPlate;
 
@@ -392,42 +392,34 @@ class SFSHOAApp {
 
         const passCode = `VIS-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
         const now = new Date();
-        const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+        const dateStr = now.toISOString().split('T')[0];
+        const timestamp = dateStr + ' ' + now.toLocaleTimeString();
 
-        // 1. Save to visitors registry
-        this.state.visitors.unshift({
-            id: 'vis-' + Date.now(),
+        // 1. Add to Dedicated Visitor Logs
+        this.state.visitorLogs.unshift({
+            id: 'vlog-' + Date.now(),
+            date: dateStr,
+            timestamp: timestamp,
+            gate: 'Gate 1 - Main North Entrance',
             plateNumber: visitor.plateNumber,
             driverName: visitor.driverName,
             driverIdPhoto: visitor.driverIdPhoto,
             purpose: visitor.purpose,
-            visitingAddress: visitor.destination,
+            destination: visitor.destination,
             vehicleType: visitor.vehicleType,
             passNumber: passCode,
-            entryTime: timestamp,
             status: 'CLEARED'
         });
 
-        // 2. Add to gate access logs
-        this.addGateLog({
-            id: 'log-' + Date.now(),
-            timestamp: timestamp,
-            gate: 'Gate 1 - Main North Entrance',
-            plateNumber: visitor.plateNumber,
-            ownerName: `${visitor.driverName} (Visitor)`,
-            ownerImage: visitor.driverIdPhoto,
-            vehicleImage: '',
-            vehicleModel: `${visitor.vehicleType} (${visitor.purpose})`,
-            rfidTag: passCode,
-            direction: 'ENTRY',
-            status: 'VISITOR',
-            reason: `Driver ID Captured. Destination: ${visitor.destination}`
-        });
+        this.saveData();
+        this.renderVisitorLogs();
+        this.renderVisitorDailyTotals();
+        this.renderStats();
 
         // Close the pop-up window
         this.closeVisitorModal();
 
-        // 3. Play chime & open barrier arm
+        // 2. Play chime & open barrier arm
         this.playBeep('granted');
 
         const gateArm = document.getElementById('simulatorGateArm');
@@ -443,7 +435,7 @@ class SFSHOAApp {
             gateArm.classList.add('is-open');
         }
 
-        // 4. Update Guard Monitor Screen showing Plate and Valid ID ONLY
+        // 3. Update Guard Monitor Screen showing Plate and Valid ID ONLY
         if (monitorContent) {
             monitorContent.innerHTML = `
                 <div class="animate-fadeIn p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/80 shadow-2xl relative overflow-hidden">
@@ -458,10 +450,7 @@ class SFSHOAApp {
                         </span>
                     </div>
 
-                    <!-- SHOW CAPTURED PLATE NUMBER & VALID ID ONLY -->
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                        
-                        <!-- Driver's Captured Valid ID Card (7 cols) -->
                         <div class="sm:col-span-7 space-y-2">
                             <div class="relative rounded-2xl overflow-hidden border-2 border-amber-400/90 bg-slate-900 aspect-video shadow-xl">
                                 <img src="${visitor.driverIdPhoto}" alt="Driver Valid ID" class="w-full h-full object-cover">
@@ -477,7 +466,6 @@ class SFSHOAApp {
                             </div>
                         </div>
 
-                        <!-- Captured Plate Number (5 cols) -->
                         <div class="sm:col-span-5 space-y-3">
                             <div class="bg-white rounded-2xl p-4 border-2 border-slate-900 shadow-xl text-center">
                                 <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center justify-center gap-1.5">
@@ -498,7 +486,6 @@ class SFSHOAApp {
                                 <div class="text-[10px] text-slate-400 mt-0.5">Dest: ${visitor.destination}</div>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
@@ -516,7 +503,6 @@ class SFSHOAApp {
             window.confetti({ particleCount: 35, spread: 45, origin: { y: 0.8 } });
         }
 
-        // Auto-close barrier after 5.5s
         setTimeout(() => {
             if (gateArm) gateArm.classList.remove('is-open');
             if (ledIndicator) {
@@ -525,6 +511,260 @@ class SFSHOAApp {
             }
             this.renderGuardConsoleIdle();
         }, 5500);
+    }
+
+    // ==========================================
+    // RENDERING DUAL LOGS WINDOWS (HOMEOWNERS & VISITORS)
+    // ==========================================
+    renderHomeownerLogs() {
+        const tbody = document.getElementById('homeownerLogsTableBody');
+        const countBadge = document.getElementById('homeownerLogsCountBadge');
+        if (!tbody) return;
+
+        if (countBadge) {
+            countBadge.textContent = `${this.state.homeownerLogs.length} Records`;
+        }
+
+        if (this.state.homeownerLogs.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-slate-400">
+                        <i class="fa-solid fa-house-chimney-user text-3xl mb-2 text-slate-300 block"></i>
+                        No registered homeowner access logs recorded yet.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = this.state.homeownerLogs.slice(0, 25).map(log => {
+            const dirIcon = log.direction === 'ENTRY' ? 'fa-solid fa-arrow-right-to-bracket text-emerald-600' : 'fa-solid fa-arrow-right-from-bracket text-amber-600';
+            const ownerImg = log.ownerImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80';
+            const vehImg = log.vehicleImage || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=120&q=80';
+
+            return `
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 text-xs">
+                    <td class="px-4 py-3 whitespace-nowrap font-mono text-slate-500">
+                        ${log.timestamp}
+                        <div class="text-[10px] text-slate-400">${log.gate}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center gap-2.5">
+                            <img src="${vehImg}" alt="${log.plateNumber}" class="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0">
+                            <div>
+                                <div class="font-black text-slate-900 font-mono tracking-wider">${log.plateNumber}</div>
+                                <div class="text-[10px] text-slate-500">${log.vehicleModel || 'Resident Car'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                            <img src="${ownerImg}" alt="${log.ownerName}" class="w-6 h-6 rounded-full object-cover border border-slate-200">
+                            <div>
+                                <div class="font-bold text-slate-800">${log.ownerName}</div>
+                                <div class="text-[10px] text-slate-500">${log.blockLot || 'SFS Phase 1'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap font-mono text-[11px] text-sky-700">
+                        ${log.rfidTag}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <i class="${dirIcon}"></i> ${log.direction} • GRANTED
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    renderVisitorLogs() {
+        const tbody = document.getElementById('visitorLogsTableBody');
+        const countBadge = document.getElementById('visitorLogsCountBadge');
+        if (!tbody) return;
+
+        let list = this.state.visitorLogs;
+
+        // Filter by selected date if not 'all'
+        if (this.state.selectedVisitorDate !== 'all') {
+            list = list.filter(v => v.date === this.state.selectedVisitorDate);
+        }
+
+        if (countBadge) {
+            countBadge.textContent = `${list.length} Visitor Passes`;
+        }
+
+        if (list.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-slate-400">
+                        <i class="fa-solid fa-id-card text-3xl mb-2 text-slate-300 block"></i>
+                        No visitor logs recorded for ${this.state.selectedVisitorDate === 'all' ? 'the selected view' : this.state.selectedVisitorDate}.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = list.slice(0, 30).map(log => {
+            const idPhoto = log.driverIdPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80';
+
+            return `
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 text-xs">
+                    <td class="px-4 py-3 whitespace-nowrap font-mono text-slate-500">
+                        ${log.timestamp}
+                        <div class="text-[10px] text-amber-700 font-bold">${log.passNumber}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="font-black text-slate-900 font-mono tracking-wider">${log.plateNumber}</div>
+                        <div class="text-[10px] text-slate-500">${log.vehicleType || 'Vehicle'}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center gap-2.5">
+                            <div class="relative w-12 h-8 rounded border border-amber-300 overflow-hidden bg-slate-900 shrink-0 shadow-sm">
+                                <img src="${idPhoto}" alt="Driver Valid ID" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-800">${log.driverName}</div>
+                                <div class="text-[10px] text-emerald-700 font-semibold"><i class="fa-solid fa-circle-check text-[9px] mr-1"></i>Valid ID Verified</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="font-semibold text-slate-800 text-[11px]">${log.purpose}</div>
+                        <div class="text-[10px] text-slate-500 flex items-center gap-1">
+                            <i class="fa-solid fa-location-dot text-amber-600"></i> ${log.destination}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            <i class="fa-solid fa-circle-check text-amber-600"></i> CLEARED
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Render Total Number of Visitors Per Date Widget
+    renderVisitorDailyTotals() {
+        const container = document.getElementById('visitorDailyTotalsContainer');
+        if (!container) return;
+
+        // Group visitors by date
+        const dateMap = {};
+        this.state.visitorLogs.forEach(v => {
+            const d = v.date || (v.timestamp ? v.timestamp.split(' ')[0] : '2026-11-17');
+            dateMap[d] = (dateMap[d] || 0) + 1;
+        });
+
+        const dates = Object.keys(dateMap).sort().reverse();
+        const totalAllVisitors = this.state.visitorLogs.length;
+
+        let pillsHtml = `
+            <button onclick="app.filterVisitorByDate('all')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${this.state.selectedVisitorDate === 'all' ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-300' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'}">
+                <span>All Dates</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] ${this.state.selectedVisitorDate === 'all' ? 'bg-slate-950 text-amber-300' : 'bg-slate-200 text-slate-700'}">${totalAllVisitors}</span>
+            </button>
+        `;
+
+        dates.forEach(date => {
+            const count = dateMap[date];
+            const isSelected = this.state.selectedVisitorDate === date;
+
+            // Formatted date string (e.g. Nov 17, 2026)
+            let formattedDate = date;
+            try {
+                const parts = date.split('-');
+                if (parts.length === 3) {
+                    const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+                    formattedDate = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+            } catch(e) {}
+
+            pillsHtml += `
+                <button onclick="app.filterVisitorByDate('${date}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${isSelected ? 'bg-amber-500 text-slate-950 shadow-md ring-2 ring-amber-300' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'}">
+                    <i class="fa-solid fa-calendar-day text-amber-600"></i>
+                    <span>${formattedDate}</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black ${isSelected ? 'bg-slate-950 text-amber-300' : 'bg-amber-100 text-amber-900'}">${count} ${count === 1 ? 'visitor' : 'visitors'}</span>
+                </button>
+            `;
+        });
+
+        container.innerHTML = pillsHtml;
+
+        // Also update total summary stat in window header
+        const totalTodayEl = document.getElementById('statTotalVisitorsToday');
+        if (totalTodayEl) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            totalTodayEl.textContent = dateMap[todayStr] || 0;
+        }
+    }
+
+    filterVisitorByDate(date) {
+        this.state.selectedVisitorDate = date;
+        this.renderVisitorDailyTotals();
+        this.renderVisitorLogs();
+        this.showToast(date === 'all' ? 'Showing all visitor records.' : `Filtered visitor records for date: ${date}`, 'info');
+    }
+
+    // Switch between Homeowners Logs Window and Visitors Logs Window
+    switchLogsWindow(windowName) {
+        const winHome = document.getElementById('windowHomeownersLogs');
+        const winVisitor = document.getElementById('windowVisitorLogs');
+        const btnHome = document.getElementById('tabBtnHomeownerWindow');
+        const btnVisitor = document.getElementById('tabBtnVisitorWindow');
+        const btnBoth = document.getElementById('tabBtnBothWindows');
+
+        if (windowName === 'homeowner') {
+            winHome.classList.remove('hidden');
+            winVisitor.classList.add('hidden');
+            winHome.classList.remove('lg:col-span-6');
+            winHome.classList.add('lg:col-span-12');
+
+            btnHome.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white shadow-sm flex items-center gap-2';
+            btnVisitor.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-2';
+            if (btnBoth) btnBoth.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-2';
+        } else if (windowName === 'visitor') {
+            winHome.classList.add('hidden');
+            winVisitor.classList.remove('hidden');
+            winVisitor.classList.remove('lg:col-span-6');
+            winVisitor.classList.add('lg:col-span-12');
+
+            btnHome.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-2';
+            btnVisitor.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 shadow-sm flex items-center gap-2';
+            if (btnBoth) btnBoth.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-2';
+        } else {
+            // View Both Side-by-Side
+            winHome.classList.remove('hidden');
+            winVisitor.classList.remove('hidden');
+            winHome.classList.remove('lg:col-span-12');
+            winHome.classList.add('lg:col-span-6');
+            winVisitor.classList.remove('lg:col-span-12');
+            winVisitor.classList.add('lg:col-span-6');
+
+            btnHome.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-2';
+            btnVisitor.className = 'px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-200 flex items-center gap-2';
+            if (btnBoth) btnBoth.className = 'px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-sm flex items-center gap-2';
+        }
+    }
+
+    clearHomeownerLogs() {
+        if (!confirm('Clear all homeowner access logs?')) return;
+        this.state.homeownerLogs = [];
+        this.saveData();
+        this.renderHomeownerLogs();
+        this.showToast('Homeowner access logs cleared.', 'info');
+    }
+
+    clearVisitorLogs() {
+        if (!confirm('Clear all visitor access logs?')) return;
+        this.state.visitorLogs = [];
+        this.saveData();
+        this.renderVisitorLogs();
+        this.renderVisitorDailyTotals();
+        this.showToast('Visitor access logs cleared.', 'info');
     }
 
     // ==========================================
@@ -720,7 +960,8 @@ class SFSHOAApp {
         const monitorContent = document.getElementById('guardConsoleMonitorContent');
 
         const now = new Date();
-        const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+        const dateStr = now.toISOString().split('T')[0];
+        const timestamp = dateStr + ' ' + now.toLocaleTimeString();
 
         if (matchedVehicle && matchedVehicle.rfid.status === 'active') {
             // REGISTERED RESIDENT ACCESS
@@ -823,8 +1064,10 @@ class SFSHOAApp {
                 `;
             }
 
-            this.addGateLog({
-                id: 'log-' + Date.now(),
+            // Save to Dedicated Homeowner Logs
+            this.state.homeownerLogs.unshift({
+                id: 'hlog-' + Date.now(),
+                date: dateStr,
                 timestamp: timestamp,
                 gate: gateName,
                 plateNumber: matchedVehicle.plateNumber,
@@ -832,11 +1075,16 @@ class SFSHOAApp {
                 ownerImage: matchedVehicle.ownerImage,
                 vehicleImage: matchedVehicle.vehicleImage,
                 vehicleModel: `${matchedVehicle.make} ${matchedVehicle.model}`,
+                blockLot: matchedVehicle.blockLot,
                 rfidTag: matchedVehicle.rfid.tagId,
                 direction: direction,
                 status: 'GRANTED',
-                reason: 'Valid SFSPh1 Resident Pass'
+                reason: 'Valid Resident Pass'
             });
+
+            this.saveData();
+            this.renderHomeownerLogs();
+            this.renderStats();
 
             this.showToast(`Access Granted for ${matchedVehicle.plateNumber} (${matchedVehicle.ownerName})`, 'success');
 
@@ -860,7 +1108,6 @@ class SFSHOAApp {
 
             let plate = scannedTag.includes('DEAD') ? '' : 'UNKNOWN';
 
-            // Open the streamlined pop-up window showing captured plate and valid ID only!
             setTimeout(() => {
                 this.openVisitorModal(plate, 'Unregistered Vehicle Detected at Gate');
             }, 400);
@@ -893,23 +1140,6 @@ class SFSHOAApp {
                 </div>
             </div>
         `;
-    }
-
-    addGateLog(log) {
-        this.state.gateLogs.unshift(log);
-        if (this.state.gateLogs.length > 50) {
-            this.state.gateLogs.pop();
-        }
-        this.saveData();
-        this.renderGateLogs();
-    }
-
-    clearGateLogs() {
-        if (!confirm('Clear all access history logs?')) return;
-        this.state.gateLogs = [];
-        this.saveData();
-        this.renderGateLogs();
-        this.showToast('Gate access logs cleared.', 'info');
     }
 
     // ==========================================
@@ -1058,12 +1288,12 @@ class SFSHOAApp {
         const totalVehicles = this.state.vehicles.length;
         const activeRfids = this.state.vehicles.filter(v => v.rfid && v.rfid.status === 'active').length;
         const pendingRfids = this.state.vehicles.filter(v => !v.rfid).length;
-        const totalPassesToday = this.state.gateLogs.length;
+        const totalGatePasses = this.state.homeownerLogs.length + this.state.visitorLogs.length;
 
         document.getElementById('statTotalVehicles').textContent = totalVehicles;
         document.getElementById('statActiveRfids').textContent = activeRfids;
         document.getElementById('statPendingRfids').textContent = pendingRfids;
-        document.getElementById('statGateEntries').textContent = totalPassesToday;
+        document.getElementById('statGateEntries').textContent = totalGatePasses;
 
         const badgeAll = document.getElementById('badgeFilterAll');
         const badgeActive = document.getElementById('badgeFilterActive');
@@ -1203,84 +1433,6 @@ class SFSHOAApp {
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    renderGateLogs() {
-        const tbody = document.getElementById('gateLogsTableBody');
-        if (!tbody) return;
-
-        if (this.state.gateLogs.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-slate-400">
-                        <i class="fa-solid fa-clock-rotate-left text-2xl mb-2 text-slate-300 block"></i>
-                        No gate access logs recorded yet. Use the Gate Simulator above to simulate vehicle scans!
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        tbody.innerHTML = this.state.gateLogs.slice(0, 20).map(log => {
-            const isGranted = log.status === 'GRANTED';
-            const isVisitor = log.status === 'VISITOR';
-            
-            let statusBadge = '';
-            if (isVisitor) {
-                statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border bg-amber-50 text-amber-700 border-amber-200">
-                    <i class="fa-solid fa-address-card text-amber-500"></i> VISITOR CLEARED
-                </span>`;
-            } else if (isGranted) {
-                statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200">
-                    <i class="fa-solid fa-circle-check text-emerald-500"></i> GRANTED
-                </span>`;
-            } else {
-                statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border bg-red-50 text-red-700 border-red-200">
-                    <i class="fa-solid fa-circle-xmark text-red-500"></i> DENIED
-                </span>`;
-            }
-
-            const dirIcon = log.direction === 'ENTRY' ? 'fa-solid fa-arrow-right-to-bracket text-emerald-600' : 'fa-solid fa-arrow-right-from-bracket text-amber-600';
-            const ownerImg = log.ownerImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80';
-
-            return `
-                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 text-xs">
-                    <td class="px-4 py-3 whitespace-nowrap font-mono text-slate-500">
-                        ${log.timestamp}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <span class="inline-flex items-center gap-1 font-semibold text-slate-700">
-                            <i class="${dirIcon}"></i> ${log.direction}
-                        </span>
-                        <div class="text-[10px] text-slate-400">${log.gate}</div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="flex items-center gap-2">
-                            ${log.vehicleImage ? `
-                                <img src="${log.vehicleImage}" alt="${log.plateNumber}" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0">
-                            ` : ''}
-                            <div>
-                                <div class="font-bold text-slate-900 font-mono">${log.plateNumber}</div>
-                                <div class="text-[11px] text-slate-500">${log.vehicleModel || 'N/A'}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="flex items-center gap-2">
-                            <img src="${ownerImg}" alt="${log.ownerName}" class="w-6 h-6 rounded-full object-cover border border-slate-200">
-                            <span class="font-medium text-slate-700">${log.ownerName}</span>
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap font-mono text-[11px] text-slate-600">
-                        ${log.rfidTag}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        ${statusBadge}
-                        <div class="text-[10px] text-slate-400 mt-0.5 truncate max-w-[140px]" title="${log.reason}">${log.reason}</div>
                     </td>
                 </tr>
             `;
@@ -1453,7 +1605,9 @@ class SFSHOAApp {
                     this.loadData();
                     this.renderStats();
                     this.renderVehiclesTable();
-                    this.renderGateLogs();
+                    this.renderHomeownerLogs();
+                    this.renderVisitorLogs();
+                    this.renderVisitorDailyTotals();
                     this.populateGateSimulatorDropdown();
                     this.renderGuardConsoleIdle();
                     this.showToast('Data reset to demonstration seed.', 'info');
