@@ -1642,10 +1642,16 @@ class SFSHOAApp {
             });
         });
 
-        // Gate Simulator select vehicle
+        // Gate Simulator select vehicle (immediate auto-scan on selection)
         const simSelect = document.getElementById('simulatorVehicleSelect');
         if (simSelect) {
             simSelect.addEventListener('change', (e) => this.handleGateVehicleSelect(e));
+        }
+
+        // Gate Location switcher
+        const gateLocSelect = document.getElementById('simulatorGateSelect');
+        if (gateLocSelect) {
+            gateLocSelect.addEventListener('change', (e) => this.handleGateLocationChange(e));
         }
 
         // Simulator Tap Button
