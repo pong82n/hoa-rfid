@@ -8,7 +8,7 @@ const SFS_INITIAL_DATA = {
         address: "Phase 1 Clubhouse, South Blvd, SFS Subdivision",
         contactNumber: "+63 (02) 8876-5432 / +63 917 123 4567",
         email: "admin@sfsph1-hoa.ph",
-        facilityCode: "084", // Wiegand Facility Code for SFSPh1
+        facilityCode: "084",
         currentYear: 2026
     },
     vehicles: [
@@ -26,6 +26,8 @@ const SFS_INITIAL_DATA = {
             model: "Fortuner GR-S",
             year: "2024",
             color: "Attitude Black",
+            ownerImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-44B2-9A01",
                 wiegandCode: "FC:084-ID:10492",
@@ -33,7 +35,7 @@ const SFS_INITIAL_DATA = {
                 frequency: "865-928 MHz (UHF Gen2)",
                 issueDate: "2026-01-15",
                 expiryDate: "2027-01-15",
-                status: "active", // active, suspended, expired, pending
+                status: "active",
                 tagType: "Windshield Decal (Anti-Tamper)"
             },
             registeredAt: "2026-01-15T09:30:00"
@@ -52,6 +54,8 @@ const SFS_INITIAL_DATA = {
             model: "Civic RS Turbo",
             year: "2023",
             color: "Platinum White Pearl",
+            ownerImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-57C3-8B14",
                 wiegandCode: "FC:084-ID:10493",
@@ -78,6 +82,8 @@ const SFS_INITIAL_DATA = {
             model: "Ranger Raptor 3.0 V6",
             year: "2024",
             color: "Code Orange",
+            ownerImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-72D9-1E32",
                 wiegandCode: "FC:084-ID:10494",
@@ -104,6 +110,8 @@ const SFS_INITIAL_DATA = {
             model: "NMAX 155 ABS",
             year: "2023",
             color: "Matte Dark Blue",
+            ownerImage: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-83FA-6D45",
                 wiegandCode: "FC:084-ID:10495",
@@ -130,58 +138,164 @@ const SFS_INITIAL_DATA = {
             model: "Xpander Cross",
             year: "2022",
             color: "Sunrise Orange",
-            rfid: null, // Pending RFID generation
+            ownerImage: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80",
+            rfid: null,
             registeredAt: "2026-02-14T10:20:00"
         }
     ],
-    gateLogs: [
+    // Dedicated Homeowner Barrier Gate Logs
+    homeownerLogs: [
         {
-            id: "log-101",
+            id: "hlog-101",
+            date: "2026-11-17",
             timestamp: "2026-11-17 07:42:15",
             gate: "Gate 1 - Main North Entrance",
             plateNumber: "NAK 4821",
             ownerName: "Juan Dela Cruz",
-            vehicleModel: "Toyota Fortuner",
+            ownerImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
+            vehicleModel: "Toyota Fortuner GR-S",
+            blockLot: "Blk 4 Lot 12",
             rfidTag: "E280-6901-44B2-9A01",
             direction: "ENTRY",
             status: "GRANTED",
-            reason: "Valid Resident Tag"
+            reason: "Valid Resident Pass"
         },
         {
-            id: "log-102",
+            id: "hlog-102",
+            date: "2026-11-17",
             timestamp: "2026-11-17 07:55:30",
             gate: "Gate 1 - Main North Exit",
             plateNumber: "CBC 7781",
             ownerName: "Engr. Roberto Tan",
-            vehicleModel: "Ford Ranger",
+            ownerImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=600&q=80",
+            vehicleModel: "Ford Ranger Raptor",
+            blockLot: "Blk 7 Lot 25",
             rfidTag: "E280-6901-72D9-1E32",
             direction: "EXIT",
             status: "GRANTED",
-            reason: "Valid Resident Tag"
+            reason: "Valid Resident Pass"
         },
         {
-            id: "log-103",
+            id: "hlog-103",
+            date: "2026-11-17",
             timestamp: "2026-11-17 08:12:04",
             gate: "Gate 2 - East Resident Lane",
             plateNumber: "DAB 9210",
             ownerName: "Atty. Maria Santos",
-            vehicleModel: "Honda Civic",
+            ownerImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80",
+            vehicleModel: "Honda Civic RS",
+            blockLot: "Blk 2 Lot 8",
             rfidTag: "E280-6901-57C3-8B14",
             direction: "ENTRY",
             status: "GRANTED",
-            reason: "Valid Resident Tag"
+            reason: "Valid Resident Pass"
         },
         {
-            id: "log-104",
-            timestamp: "2026-11-17 08:35:19",
+            id: "hlog-104",
+            date: "2026-11-16",
+            timestamp: "2026-11-16 18:30:10",
             gate: "Gate 1 - Main North Entrance",
-            plateNumber: "UNKNOWN",
-            ownerName: "Visitor / Unregistered",
-            vehicleModel: "Unknown Vehicle",
-            rfidTag: "E280-9999-0000-DEAD",
+            plateNumber: "842 NBV",
+            ownerName: "Sarah Jennifer Lim",
+            ownerImage: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80",
+            vehicleModel: "Yamaha NMAX 155",
+            blockLot: "Blk 1 Lot 3",
+            rfidTag: "E280-6901-83FA-6D45",
             direction: "ENTRY",
-            status: "DENIED",
-            reason: "Unregistered RFID Tag / Please Visit Guardhouse"
+            status: "GRANTED",
+            reason: "Valid Resident Pass"
+        }
+    ],
+    // Dedicated Visitor Clearance & ID Capture Logs (with dates for counting)
+    visitorLogs: [
+        {
+            id: "vlog-201",
+            date: "2026-11-17",
+            timestamp: "2026-11-17 07:15:20",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "WXY 5678",
+            driverName: "Rodrigo Perez",
+            driverIdPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            purpose: "GrabFood Delivery",
+            destination: "Blk 4 Lot 12, Mahogany St",
+            vehicleType: "Motorcycle",
+            passNumber: "VIS-2026-0041",
+            status: "CLEARED"
+        },
+        {
+            id: "vlog-202",
+            date: "2026-11-17",
+            timestamp: "2026-11-17 08:35:10",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "NBD 3841",
+            driverName: "Eduardo Ramos",
+            driverIdPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+            purpose: "Lalamove Courier Parcel",
+            destination: "Blk 2 Lot 8, Acacia Ave",
+            vehicleType: "Van / Truck",
+            passNumber: "VIS-2026-0042",
+            status: "CLEARED"
+        },
+        {
+            id: "vlog-203",
+            date: "2026-11-17",
+            timestamp: "2026-11-17 09:10:45",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "NDX 7789",
+            driverName: "Beatriz Nicole Gomez",
+            driverIdPhoto: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80",
+            purpose: "Personal Guest / Family",
+            destination: "Blk 7 Lot 25, Narra Blvd",
+            vehicleType: "Sedan",
+            passNumber: "VIS-2026-0043",
+            status: "CLEARED"
+        },
+        {
+            id: "vlog-204",
+            date: "2026-11-16",
+            timestamp: "2026-11-16 14:22:00",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "CBA 4910",
+            driverName: "Mario Villanueva",
+            driverIdPhoto: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
+            purpose: "Aircon Contractor / Repair",
+            destination: "Blk 5 Lot 18, Narra Blvd",
+            vehicleType: "Van / Pickup",
+            passNumber: "VIS-2026-0038",
+            status: "CLEARED"
+        },
+        {
+            id: "vlog-205",
+            date: "2026-11-16",
+            timestamp: "2026-11-16 16:45:12",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "TAR 9021",
+            driverName: "Ramon Bautista",
+            driverIdPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+            purpose: "Shopee Xpress Delivery",
+            destination: "Blk 1 Lot 3, Palm Dr",
+            vehicleType: "Motorcycle",
+            passNumber: "VIS-2026-0039",
+            status: "CLEARED"
+        },
+        {
+            id: "vlog-206",
+            date: "2026-11-15",
+            timestamp: "2026-11-15 11:30:00",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "ZAB 8823",
+            driverName: "Danilo Santos",
+            driverIdPhoto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+            purpose: "Meralco / Utility Inspection",
+            destination: "Phase 1 Clubhouse & Substation",
+            vehicleType: "Utility Van",
+            passNumber: "VIS-2026-0031",
+            status: "CLEARED"
         }
     ]
 };

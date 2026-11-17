@@ -62,8 +62,8 @@
 /* Realistic RFID Windshield Sticker / Decal */
 .rfid-decal-card {
     position: relative;
-    width: 380px;
-    height: 230px;
+    width: 390px;
+    min-height: 245px;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
@@ -139,6 +139,39 @@
     box-shadow: 0 0 16px #10b981;
 }
 
+/* Guard Console Screen HUD */
+.guard-monitor {
+    background: linear-gradient(180deg, #090d16 0%, #0f172a 100%);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.guard-monitor::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    opacity: 0.4;
+    border-radius: inherit;
+}
+
+/* Image Upload Dropzone */
+.image-dropzone {
+    border: 2px dashed #cbd5e1;
+    transition: all 0.2s ease;
+}
+.image-dropzone:hover {
+    border-color: #0284c7;
+    background-color: #f0f9ff;
+}
+
 /* RFID Signal Wave Animation */
 .rfid-wave {
     position: relative;
@@ -181,8 +214,34 @@
     }
     to {
         transform: translateX(0);
-        opacity: 1;
     }
+}
+
+/* Guard Console Dropdown and Option Styles */
+#simulatorVehicleSelect,
+#simulatorGateSelect,
+#simulatorDirectionSelect {
+    background-color: #090d16 !important;
+    color: #f8fafc !important;
+}
+
+#simulatorVehicleSelect option,
+#simulatorGateSelect option,
+#simulatorDirectionSelect option {
+    background-color: #090d16 !important;
+    color: #f1f5f9 !important;
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+#simulatorVehicleSelect optgroup {
+    background-color: #1e293b !important;
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+    padding: 8px 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* Print specific styles for printing decals & QR posters */
