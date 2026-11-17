@@ -214,8 +214,34 @@
     }
     to {
         transform: translateX(0);
-        opacity: 1;
     }
+}
+
+/* Guard Console Dropdown and Option Styles */
+#simulatorVehicleSelect,
+#simulatorGateSelect,
+#simulatorDirectionSelect {
+    background-color: #090d16 !important;
+    color: #f8fafc !important;
+}
+
+#simulatorVehicleSelect option,
+#simulatorGateSelect option,
+#simulatorDirectionSelect option {
+    background-color: #090d16 !important;
+    color: #f1f5f9 !important;
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+#simulatorVehicleSelect optgroup {
+    background-color: #1e293b !important;
+    color: #38bdf8 !important;
+    font-weight: 700 !important;
+    padding: 8px 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* Print specific styles for printing decals & QR posters */
