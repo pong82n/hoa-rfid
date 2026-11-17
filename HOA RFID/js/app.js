@@ -1346,12 +1346,25 @@ class SFSHOAApp {
         const totalVehicles = this.state.vehicles.length;
         const activeRfids = this.state.vehicles.filter(v => v.rfid && v.rfid.status === 'active').length;
         const pendingRfids = this.state.vehicles.filter(v => !v.rfid).length;
-        const totalGatePasses = this.state.homeownerLogs.length + this.state.visitorLogs.length;
+        const totalGatePasses = (this.state.homeownerLogs ? this.state.homeownerLogs.length : 0) + (this.state.visitorLogs ? this.state.visitorLogs.length : 0);
 
-        document.getElementById('statTotalVehicles').textContent = totalVehicles;
-        document.getElementById('statActiveRfids').textContent = activeRfids;
-        document.getElementById('statPendingRfids').textContent = pendingRfids;
-        document.getElementById('statGateEntries').textContent = totalGatePasses;
+        const elTotalVehicles = document.getElementById('statTotalVehicles');
+        const elActiveRfids = document.getElementById('statActiveRfids');
+        const elPendingRfids = document.getElementById('statPendingRfids');
+        const elVisitorsToday = document.getElementById('statTotalVisitorsToday');
+        const elGateEntries = document.getElementById('statGateEntries');
+
+        if (elTotalVehicles) elTotalVehicles.textContent = totalVehicles;
+        if (elActiveRfids) elActiveRfids.textContent = activeRfids;
+        if (elPendingRfids) elPendingRfids.textContent = pendingRfids;
+
+        if (elVisitorsToday) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayCount = (this.state.visitorLogs || []).filter(v => v.date === todayStr).length;
+            elVisitorsToday.textContent = todayCount;
+        }
+
+        if (elGateEntries) elGateEntries.textContent = totalGatePasses;
 
         const badgeAll = document.getElementById('badgeFilterAll');
         const badgeActive = document.getElementById('badgeFilterActive');
@@ -1681,8 +1694,24 @@ class SFSHOAApp {
     }
 }
 
-// Instantiate on DOM ready
-let app;
-document.addEventListener('DOMContentLoaded', () => {
-    app = new SFSHOAApp();
-});
+// Ensure global window.app instance for inline HTML event handlers (e.g. onclick="app.foo()")
+function initSFSHOAApp() {
+    try {
+        if (!window.app) {
+            window.app = new SFSHOAApp();
+        }
+    } catch (err) {
+        console.error('Fatal initialization error in SFSHOAApp:', err);
+    }
+    return window.app;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSFSHOAApp);
+} else {
+    // If DOM is already interactive or complete, boot immediately
+    initSFSHOAApp();
+}
+
+// Global scope alias for backward compatibility
+var app = window.app || null;

@@ -299,3 +299,8 @@ const SFS_INITIAL_DATA = {
         }
     ]
 };
+
+// Expose globally on window for browser contexts
+if (typeof window !== 'undefined') {
+    window.SFS_INITIAL_DATA = SFS_INITIAL_DATA;
+}
