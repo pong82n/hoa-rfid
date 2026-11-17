@@ -3,7 +3,7 @@
 
 class SFSHOAApp {
     constructor() {
-        this.STORAGE_KEY = 'sfsph1_hoa_data_v1';
+        this.STORAGE_KEY = 'sfsph1_hoa_data_v2'; // bumped to v2 for photo support
         this.state = {
             community: null,
             vehicles: [],
@@ -11,7 +11,9 @@ class SFSHOAApp {
             activeFilter: 'all',
             searchQuery: '',
             selectedVehicleForDecal: null,
-            audioEnabled: true
+            audioEnabled: true,
+            tempOwnerImage: '',
+            tempVehicleImage: ''
         };
 
         this.audioCtx = null;
@@ -22,6 +24,7 @@ class SFSHOAApp {
         this.loadData();
         this.initAudio();
         this.initEventListeners();
+        this.initImageUploads();
         this.renderStats();
         this.renderVehiclesTable();
         this.renderGateLogs();
@@ -57,6 +60,84 @@ class SFSHOAApp {
             vehicles: this.state.vehicles,
             gateLogs: this.state.gateLogs
         }));
+    }
+
+    // Image Upload Handlers (converts uploaded file to base64 data URL)
+    initImageUploads() {
+        const ownerInput = document.getElementById('ownerImageInput');
+        const vehicleInput = document.getElementById('vehicleImageInput');
+
+        if (ownerInput) {
+            ownerInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    this.state.tempOwnerImage = event.target.result;
+                    this.updateImagePreview('owner', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (vehicleInput) {
+            vehicleInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    this.state.tempVehicleImage = event.target.result;
+                    this.updateImagePreview('vehicle', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+
+    updateImagePreview(type, dataUrl) {
+        if (type === 'owner') {
+            const previewEl = document.getElementById('ownerImagePreview');
+            const placeholder = document.getElementById('ownerUploadPlaceholder');
+            if (previewEl && placeholder) {
+                if (dataUrl) {
+                    previewEl.src = dataUrl;
+                    previewEl.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                } else {
+                    previewEl.src = '';
+                    previewEl.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                }
+            }
+        } else if (type === 'vehicle') {
+            const previewEl = document.getElementById('vehicleImagePreview');
+            const placeholder = document.getElementById('vehicleUploadPlaceholder');
+            if (previewEl && placeholder) {
+                if (dataUrl) {
+                    previewEl.src = dataUrl;
+                    previewEl.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                } else {
+                    previewEl.src = '';
+                    previewEl.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                }
+            }
+        }
+    }
+
+    clearUploadedImage(type) {
+        if (type === 'owner') {
+            this.state.tempOwnerImage = '';
+            const input = document.getElementById('ownerImageInput');
+            if (input) input.value = '';
+            this.updateImagePreview('owner', '');
+        } else if (type === 'vehicle') {
+            this.state.tempVehicleImage = '';
+            const input = document.getElementById('vehicleImageInput');
+            if (input) input.value = '';
+            this.updateImagePreview('vehicle', '');
+        }
     }
 
     // Audio synthesizer for RFID scanner & gate chimes
@@ -209,7 +290,6 @@ class SFSHOAApp {
         // Registration form URL (uses current page with #register hash)
         const currentUrl = window.location.href.split('#')[0] + '#register';
 
-        // Check if QRCode is available
         if (typeof QRCode !== 'undefined') {
             new QRCode(qrContainer, {
                 text: currentUrl,
@@ -231,7 +311,6 @@ class SFSHOAApp {
                 });
             }
         } else {
-            // High reliability fallback SVG
             const fallback = this.generateFallbackQRSvg(currentUrl);
             qrContainer.innerHTML = fallback;
             if (modalQrContainer) modalQrContainer.innerHTML = fallback;
@@ -239,7 +318,6 @@ class SFSHOAApp {
     }
 
     generateFallbackQRSvg(text) {
-        // SVG representation of a clean QR Code
         return `
             <div class="flex flex-col items-center justify-center p-2 bg-white rounded border border-slate-200">
                 <svg class="w-32 h-32 text-slate-800" viewBox="0 0 100 100" fill="currentColor">
@@ -255,7 +333,6 @@ class SFSHOAApp {
                     <rect x="15" y="70" width="15" height="15" fill="#ffffff"/>
                     <rect x="18" y="73" width="9" height="9" fill="#0f172a"/>
 
-                    <!-- Data dots mockup -->
                     <rect x="42" y="12" width="6" height="6" fill="#0f172a"/>
                     <rect x="52" y="20" width="6" height="6" fill="#0f172a"/>
                     <rect x="42" y="32" width="16" height="6" fill="#0f172a"/>
@@ -304,6 +381,17 @@ class SFSHOAApp {
         document.getElementById('decalSerial').textContent = vehicle.rfid.serialNumber;
         document.getElementById('decalExpiry').textContent = `VALID THRU: ${vehicle.rfid.expiryDate}`;
         document.getElementById('decalTagType').textContent = vehicle.rfid.tagType;
+
+        // Decal Thumbnails
+        const decalOwnerImg = document.getElementById('decalOwnerPhoto');
+        if (decalOwnerImg) {
+            decalOwnerImg.src = vehicle.ownerImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80';
+        }
+
+        const decalVehImg = document.getElementById('decalVehiclePhoto');
+        if (decalVehImg) {
+            decalVehImg.src = vehicle.vehicleImage || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=200&q=80';
+        }
 
         const statusBadge = document.getElementById('decalStatusBadge');
         if (statusBadge) {
@@ -375,7 +463,7 @@ class SFSHOAApp {
     }
 
     // ==========================================
-    // GATE SIMULATOR (BARRIER & RFID READER)
+    // GATE SIMULATOR (GUARD CONSOLE & RFID READER)
     // ==========================================
     populateGateSimulatorDropdown() {
         const select = document.getElementById('simulatorVehicleSelect');
@@ -461,8 +549,7 @@ class SFSHOAApp {
 
         const gateArm = document.getElementById('simulatorGateArm');
         const ledIndicator = document.getElementById('simulatorLed');
-        const statusScreen = document.getElementById('gateStatusDisplay');
-        const statusSubtext = document.getElementById('gateSubtextDisplay');
+        const monitorContent = document.getElementById('guardConsoleMonitorContent');
 
         const now = new Date();
         const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
@@ -480,16 +567,98 @@ class SFSHOAApp {
                 gateArm.classList.add('is-open');
             }
 
-            if (statusScreen) {
-                statusScreen.className = 'text-xl font-black text-emerald-400 font-mono tracking-wide';
-                statusScreen.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i>ACCESS GRANTED`;
-            }
+            const ownerPhotoUrl = matchedVehicle.ownerImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+            const vehiclePhotoUrl = matchedVehicle.vehicleImage || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=400&q=80';
 
-            if (statusSubtext) {
-                statusSubtext.innerHTML = `
-                    <div class="text-xs text-emerald-200 mt-1">
-                        <b>${matchedVehicle.plateNumber}</b> | ${matchedVehicle.ownerName} (${matchedVehicle.blockLot})<br>
-                        <span class="text-slate-400">Barrier Open. Proceed with caution (Max 20 kph).</span>
+            if (monitorContent) {
+                monitorContent.innerHTML = `
+                    <div class="animate-fadeIn p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-emerald-500/80 shadow-2xl relative overflow-hidden">
+                        
+                        <!-- Top verification bar -->
+                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-emerald-500/30">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+                                <span class="text-xs font-black tracking-widest text-emerald-400 uppercase font-mono">VERIFIED RESIDENT CLEARANCE</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-500 text-slate-950 tracking-wide uppercase shadow-sm">
+                                <i class="fa-solid fa-circle-check mr-1"></i> ACCESS GRANTED
+                            </span>
+                        </div>
+
+                        <!-- Main Split Display: Photos & Details -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                            
+                            <!-- Vehicle Photo & Plate Badge (Left 7 cols) -->
+                            <div class="sm:col-span-7 space-y-2.5">
+                                <div class="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-900 aspect-video shadow-md group">
+                                    <img src="${vehiclePhotoUrl}" alt="${matchedVehicle.make} ${matchedVehicle.model}" class="w-full h-full object-cover">
+                                    <div class="absolute bottom-2 left-2 bg-slate-950/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-700 text-[11px] text-white font-medium">
+                                        <i class="fa-solid fa-car-side text-sky-400 mr-1.5"></i>${matchedVehicle.make} ${matchedVehicle.model} (${matchedVehicle.color})
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
+                                        ${matchedVehicle.vehicleType}
+                                    </div>
+                                </div>
+
+                                <!-- PROMINENT PLATE NUMBER BADGE -->
+                                <div class="bg-white rounded-xl p-3 border-2 border-slate-900 flex items-center justify-between shadow-lg">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-7 h-7 rounded bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                                            <i class="fa-solid fa-tree-city"></i>
+                                        </div>
+                                        <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">OFFICIAL PLATE</div>
+                                    </div>
+                                    <div class="text-2xl sm:text-3xl font-black font-mono tracking-widest text-slate-950">
+                                        ${matchedVehicle.plateNumber}
+                                    </div>
+                                    <span class="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                                        VALID TAG
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Owner Photo & Resident Info (Right 5 cols) -->
+                            <div class="sm:col-span-5 bg-slate-900/90 rounded-xl p-3.5 border border-slate-800 space-y-3">
+                                
+                                <div class="flex items-center gap-3">
+                                    <div class="relative shrink-0">
+                                        <img src="${ownerPhotoUrl}" alt="${matchedVehicle.ownerName}" class="w-16 h-16 rounded-xl object-cover border-2 border-emerald-400 shadow-md">
+                                        <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[10px] font-bold ring-2 ring-slate-900">
+                                            <i class="fa-solid fa-check"></i>
+                                        </span>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <div class="text-sm font-bold text-white truncate">${matchedVehicle.ownerName}</div>
+                                        <div class="text-xs text-sky-400 font-semibold">${matchedVehicle.ownerType}</div>
+                                        <div class="text-[11px] text-slate-400 truncate mt-0.5">${matchedVehicle.contact}</div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-t border-slate-800 space-y-1.5 text-xs">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-400">Address:</span>
+                                        <span class="font-bold text-slate-200">${matchedVehicle.blockLot}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="text-slate-500">Street:</span>
+                                        <span class="text-slate-300">${matchedVehicle.street}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[10px] font-mono pt-1 text-slate-500">
+                                        <span>RFID ID:</span>
+                                        <span class="text-sky-300 font-bold">${matchedVehicle.rfid.tagId}</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Footer advice -->
+                        <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                            <span class="text-emerald-400"><i class="fa-solid fa-lock-open mr-1"></i> Barrier Raised. Maximum Speed 20 km/h.</span>
+                            <span class="font-mono text-slate-500">Gate 1 North • Lane 1</span>
+                        </div>
+
                     </div>
                 `;
             }
@@ -501,6 +670,8 @@ class SFSHOAApp {
                 gate: gateName,
                 plateNumber: matchedVehicle.plateNumber,
                 ownerName: matchedVehicle.ownerName,
+                ownerImage: matchedVehicle.ownerImage,
+                vehicleImage: matchedVehicle.vehicleImage,
                 vehicleModel: `${matchedVehicle.make} ${matchedVehicle.model}`,
                 rfidTag: matchedVehicle.rfid.tagId,
                 direction: direction,
@@ -510,21 +681,15 @@ class SFSHOAApp {
 
             this.showToast(`Access Granted for ${matchedVehicle.plateNumber} (${matchedVehicle.ownerName})`, 'success');
 
-            // Reset barrier after 4.5 seconds
+            // Reset barrier after 5 seconds
             setTimeout(() => {
                 if (gateArm) gateArm.classList.remove('is-open');
                 if (ledIndicator) {
                     ledIndicator.classList.remove('green');
                     ledIndicator.classList.add('red');
                 }
-                if (statusScreen) {
-                    statusScreen.className = 'text-lg font-bold text-slate-300 font-mono';
-                    statusScreen.innerHTML = `<i class="fa-solid fa-tower-broadcast text-sky-400 mr-2"></i>GATE READY - TAP RFID`;
-                }
-                if (statusSubtext) {
-                    statusSubtext.innerHTML = `<span class="text-xs text-slate-400">Drive up close to RFID transceiver (within 3-5 meters)</span>`;
-                }
-            }, 4500);
+                this.renderGuardConsoleIdle();
+            }, 5000);
 
         } else {
             // ACCESS DENIED
@@ -535,28 +700,73 @@ class SFSHOAApp {
                 ledIndicator.classList.add('red');
             }
 
-            if (statusScreen) {
-                statusScreen.className = 'text-xl font-black text-red-400 font-mono tracking-wide';
-                statusScreen.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500 mr-2"></i>ACCESS DENIED`;
-            }
-
             let reason = 'Unregistered / Invalid RFID Tag';
             let ownerName = 'Visitor / Unregistered';
-            let plate = 'UNKNOWN';
+            let plate = scannedTag.includes('DEAD') ? 'UNREGISTERED' : 'UNKNOWN';
             let model = 'Unknown Vehicle';
+            let ownerPhotoUrl = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
+            let vehiclePhotoUrl = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=400&q=80';
 
             if (matchedVehicle && matchedVehicle.rfid.status !== 'active') {
-                reason = `Tag is ${matchedVehicle.rfid.status.toUpperCase()}`;
+                reason = `RFID Tag is ${matchedVehicle.rfid.status.toUpperCase()}`;
                 ownerName = matchedVehicle.ownerName;
                 plate = matchedVehicle.plateNumber;
                 model = `${matchedVehicle.make} ${matchedVehicle.model}`;
+                if (matchedVehicle.ownerImage) ownerPhotoUrl = matchedVehicle.ownerImage;
+                if (matchedVehicle.vehicleImage) vehiclePhotoUrl = matchedVehicle.vehicleImage;
             }
 
-            if (statusSubtext) {
-                statusSubtext.innerHTML = `
-                    <div class="text-xs text-red-200 mt-1">
-                        <b>${reason}</b><br>
-                        <span class="text-slate-300">Please report to Guardhouse for manual verification.</span>
+            if (monitorContent) {
+                monitorContent.innerHTML = `
+                    <div class="animate-fadeIn p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-red-500/80 shadow-2xl relative overflow-hidden">
+                        
+                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-red-500/30">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                                <span class="text-xs font-black tracking-widest text-red-400 uppercase font-mono">SECURITY ALERT • BARRIER LOCKED</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-black bg-red-600 text-white tracking-wide uppercase shadow-sm">
+                                <i class="fa-solid fa-triangle-exclamation mr-1"></i> ACCESS DENIED
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                            
+                            <div class="sm:col-span-7 space-y-2.5">
+                                <div class="relative rounded-xl overflow-hidden border border-red-900/60 bg-slate-900 aspect-video flex items-center justify-center">
+                                    <div class="text-center p-4">
+                                        <i class="fa-solid fa-ban text-4xl text-red-500 mb-2"></i>
+                                        <p class="text-xs font-bold text-red-300">Vehicle Not Cleared For Auto-Entry</p>
+                                        <p class="text-[10px] text-slate-400">Tag: ${scannedTag}</p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-red-950/60 rounded-xl p-3 border-2 border-red-600/60 flex items-center justify-between shadow-lg">
+                                    <div class="text-[10px] font-bold text-red-300 uppercase tracking-wider">DETECTED PLATE</div>
+                                    <div class="text-2xl font-black font-mono tracking-widest text-white">
+                                        ${plate}
+                                    </div>
+                                    <span class="text-[10px] font-mono text-red-200 font-bold bg-red-900 px-2 py-1 rounded">
+                                        UNAUTHORIZED
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="sm:col-span-5 bg-slate-900/90 rounded-xl p-3.5 border border-slate-800 space-y-2">
+                                <div class="text-xs font-bold text-red-400 uppercase">Action Required:</div>
+                                <div class="text-xs text-slate-200 font-semibold">${reason}</div>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    Instruct driver to park in the visitor holding bay and present valid identification and LTO OR/CR at Guardhouse Window 1.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                            <span class="text-red-400">Manual verification required by Security Officer</span>
+                            <span class="font-mono">${gateName}</span>
+                        </div>
+
                     </div>
                 `;
             }
@@ -568,6 +778,8 @@ class SFSHOAApp {
                 gate: gateName,
                 plateNumber: plate,
                 ownerName: ownerName,
+                ownerImage: matchedVehicle ? matchedVehicle.ownerImage : '',
+                vehicleImage: matchedVehicle ? matchedVehicle.vehicleImage : '',
                 vehicleModel: model,
                 rfidTag: scannedTag,
                 direction: direction,
@@ -578,20 +790,41 @@ class SFSHOAApp {
             this.showToast(`Access Denied: ${reason}`, 'error');
 
             setTimeout(() => {
-                if (statusScreen) {
-                    statusScreen.className = 'text-lg font-bold text-slate-300 font-mono';
-                    statusScreen.innerHTML = `<i class="fa-solid fa-tower-broadcast text-sky-400 mr-2"></i>GATE READY - TAP RFID`;
-                }
-                if (statusSubtext) {
-                    statusSubtext.innerHTML = `<span class="text-xs text-slate-400">Drive up close to RFID transceiver (within 3-5 meters)</span>`;
-                }
-            }, 3500);
+                this.renderGuardConsoleIdle();
+            }, 4000);
         }
+    }
+
+    renderGuardConsoleIdle() {
+        const monitorContent = document.getElementById('guardConsoleMonitorContent');
+        if (!monitorContent) return;
+
+        monitorContent.innerHTML = `
+            <div class="p-6 rounded-2xl bg-slate-950/90 border border-slate-800 text-center space-y-3">
+                <div class="w-14 h-14 rounded-2xl bg-sky-950/80 border border-sky-500/30 text-sky-400 flex items-center justify-center text-2xl mx-auto shadow-lg shadow-sky-500/10">
+                    <i class="fa-solid fa-tower-broadcast animate-pulse"></i>
+                </div>
+                <div>
+                    <div class="text-base font-extrabold text-slate-100 font-mono tracking-wide">
+                        SFSPh1 GUARD MONITOR • STANDBY MODE
+                    </div>
+                    <div class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                        Waiting for vehicle approach. Long-range UHF antenna active (3-5m scanning cone).
+                    </div>
+                </div>
+                <div class="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-[11px] text-slate-400 font-mono">
+                    <span><i class="fa-solid fa-shield text-emerald-400 mr-1"></i> RFID UHF Gen2</span>
+                    <span>•</span>
+                    <span>Facility Code: 084</span>
+                    <span>•</span>
+                    <span class="text-emerald-400">Barrier Ready</span>
+                </div>
+            </div>
+        `;
     }
 
     addGateLog(log) {
         this.state.gateLogs.unshift(log);
-        // keep max 50 recent logs
         if (this.state.gateLogs.length > 50) {
             this.state.gateLogs.pop();
         }
@@ -608,7 +841,7 @@ class SFSHOAApp {
     }
 
     // ==========================================
-    // VEHICLE REGISTRATION FORM
+    // VEHICLE REGISTRATION FORM SUBMISSION
     // ==========================================
     handleRegistrationSubmit(e) {
         e.preventDefault();
@@ -635,6 +868,19 @@ class SFSHOAApp {
             return;
         }
 
+        // Get uploaded photos or default fallbacks
+        const ownerImage = this.state.tempOwnerImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80';
+        let vehicleImage = this.state.tempVehicleImage;
+        if (!vehicleImage) {
+            if (vehicleType.toLowerCase().includes('motor')) {
+                vehicleImage = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=500&q=80';
+            } else if (vehicleType.toLowerCase().includes('suv')) {
+                vehicleImage = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=500&q=80';
+            } else {
+                vehicleImage = 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=500&q=80';
+            }
+        }
+
         const newVehicle = {
             id: 'veh-' + Date.now(),
             ownerName,
@@ -649,6 +895,8 @@ class SFSHOAApp {
             model,
             year: year || '2024',
             color: color || 'Standard',
+            ownerImage,
+            vehicleImage,
             rfid: autoIssueRfid ? this.generateRFIDObject(vehicleType) : null,
             registeredAt: new Date().toISOString()
         };
@@ -660,6 +908,8 @@ class SFSHOAApp {
         this.populateGateSimulatorDropdown();
 
         form.reset();
+        this.clearUploadedImage('owner');
+        this.clearUploadedImage('vehicle');
 
         if (autoIssueRfid) {
             this.showToast(`Vehicle ${plateNumber} registered and RFID Tag ${newVehicle.rfid.tagId} issued!`, 'success');
@@ -692,6 +942,8 @@ class SFSHOAApp {
             form.model.value = 'Montero Sport GT';
             form.year.value = '2024';
             form.color.value = 'Diamond White';
+            this.state.tempOwnerImage = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80';
+            this.state.tempVehicleImage = 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80';
         } else if (type === 'moto') {
             form.ownerName.value = 'Mark Anthony Tan';
             form.ownerType.value = 'Tenant';
@@ -705,6 +957,8 @@ class SFSHOAApp {
             form.model.value = 'ADV 160';
             form.year.value = '2023';
             form.color.value = 'Matte Red';
+            this.state.tempOwnerImage = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80';
+            this.state.tempVehicleImage = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80';
         } else {
             form.ownerName.value = 'Elena Gutierrez';
             form.ownerType.value = 'Homeowner';
@@ -718,9 +972,14 @@ class SFSHOAApp {
             form.model.value = 'Corolla Altis Hybrid';
             form.year.value = '2024';
             form.color.value = 'Celestite Gray';
+            this.state.tempOwnerImage = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80';
+            this.state.tempVehicleImage = 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80';
         }
+
+        this.updateImagePreview('owner', this.state.tempOwnerImage);
+        this.updateImagePreview('vehicle', this.state.tempVehicleImage);
         form.autoIssueRfid.checked = true;
-        this.showToast('Sample form filled for testing!', 'info');
+        this.showToast('Sample form and photos filled for testing!', 'info');
     }
 
     // ==========================================
@@ -737,7 +996,6 @@ class SFSHOAApp {
         document.getElementById('statPendingRfids').textContent = pendingRfids;
         document.getElementById('statGateEntries').textContent = totalPassesToday;
 
-        // Update badge counters on filter tabs
         const badgeAll = document.getElementById('badgeFilterAll');
         const badgeActive = document.getElementById('badgeFilterActive');
         const badgePending = document.getElementById('badgeFilterPending');
@@ -752,7 +1010,6 @@ class SFSHOAApp {
 
         let filtered = this.state.vehicles;
 
-        // Filter tab
         if (this.state.activeFilter === 'active') {
             filtered = filtered.filter(v => v.rfid && v.rfid.status === 'active');
         } else if (this.state.activeFilter === 'pending') {
@@ -761,7 +1018,6 @@ class SFSHOAApp {
             filtered = filtered.filter(v => v.rfid && v.rfid.status === 'suspended');
         }
 
-        // Search query
         if (this.state.searchQuery) {
             const q = this.state.searchQuery.toLowerCase();
             filtered = filtered.filter(v => 
@@ -819,12 +1075,15 @@ class SFSHOAApp {
                 </button>
             `;
 
+            const vehImg = v.vehicleImage || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=200&q=80';
+            const ownerImg = v.ownerImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80';
+
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-100">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200">
-                                <i class="${this.getVehicleIcon(v.vehicleType)}"></i>
+                            <div class="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-sm">
+                                <img src="${vehImg}" alt="${v.plateNumber}" class="w-full h-full object-cover">
                             </div>
                             <div>
                                 <div class="font-black text-slate-900 font-mono tracking-wider text-base">${v.plateNumber}</div>
@@ -833,10 +1092,15 @@ class SFSHOAApp {
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-semibold text-slate-800">${v.ownerName}</div>
-                        <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                            <span class="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">${v.ownerType}</span>
-                            <span>${v.contact}</span>
+                        <div class="flex items-center gap-2.5">
+                            <img src="${ownerImg}" alt="${v.ownerName}" class="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-sm">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-800">${v.ownerName}</div>
+                                <div class="text-xs text-slate-500 flex items-center gap-2">
+                                    <span class="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">${v.ownerType}</span>
+                                    <span>${v.contact}</span>
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -876,15 +1140,6 @@ class SFSHOAApp {
         }).join('');
     }
 
-    getVehicleIcon(type) {
-        const t = (type || '').toLowerCase();
-        if (t.includes('moto') || t.includes('bike')) return 'fa-solid fa-motorcycle text-indigo-500';
-        if (t.includes('suv')) return 'fa-solid fa-truck-pickup text-emerald-600';
-        if (t.includes('truck') || t.includes('pickup')) return 'fa-solid fa-truck text-amber-600';
-        if (t.includes('van') || t.includes('mpv')) return 'fa-solid fa-van-shuttle text-cyan-600';
-        return 'fa-solid fa-car-side text-blue-600';
-    }
-
     renderGateLogs() {
         const tbody = document.getElementById('gateLogsTableBody');
         if (!tbody) return;
@@ -906,6 +1161,7 @@ class SFSHOAApp {
             const statusClass = isGranted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200';
             const icon = isGranted ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-solid fa-circle-xmark text-red-500';
             const dirIcon = log.direction === 'ENTRY' ? 'fa-solid fa-arrow-right-to-bracket text-emerald-600' : 'fa-solid fa-arrow-right-from-bracket text-amber-600';
+            const ownerImg = log.ownerImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80';
 
             return `
                 <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 text-xs">
@@ -919,11 +1175,21 @@ class SFSHOAApp {
                         <div class="text-[10px] text-slate-400">${log.gate}</div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="font-bold text-slate-900 font-mono">${log.plateNumber}</div>
-                        <div class="text-[11px] text-slate-500">${log.vehicleModel || 'N/A'}</div>
+                        <div class="flex items-center gap-2">
+                            ${log.vehicleImage ? `
+                                <img src="${log.vehicleImage}" alt="${log.plateNumber}" class="w-8 h-8 rounded object-cover border border-slate-200 shrink-0">
+                            ` : ''}
+                            <div>
+                                <div class="font-bold text-slate-900 font-mono">${log.plateNumber}</div>
+                                <div class="text-[11px] text-slate-500">${log.vehicleModel || 'N/A'}</div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap font-medium text-slate-700">
-                        ${log.ownerName}
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                            <img src="${ownerImg}" alt="${log.ownerName}" class="w-6 h-6 rounded-full object-cover border border-slate-200">
+                            <span class="font-medium text-slate-700">${log.ownerName}</span>
+                        </div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap font-mono text-[11px] text-slate-600">
                         ${log.rfidTag}
@@ -1107,6 +1373,7 @@ class SFSHOAApp {
                     this.renderVehiclesTable();
                     this.renderGateLogs();
                     this.populateGateSimulatorDropdown();
+                    this.renderGuardConsoleIdle();
                     this.showToast('Data reset to demonstration seed.', 'info');
                 }
             });

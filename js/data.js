@@ -26,6 +26,8 @@ const SFS_INITIAL_DATA = {
             model: "Fortuner GR-S",
             year: "2024",
             color: "Attitude Black",
+            ownerImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-44B2-9A01",
                 wiegandCode: "FC:084-ID:10492",
@@ -52,6 +54,8 @@ const SFS_INITIAL_DATA = {
             model: "Civic RS Turbo",
             year: "2023",
             color: "Platinum White Pearl",
+            ownerImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-57C3-8B14",
                 wiegandCode: "FC:084-ID:10493",
@@ -78,6 +82,8 @@ const SFS_INITIAL_DATA = {
             model: "Ranger Raptor 3.0 V6",
             year: "2024",
             color: "Code Orange",
+            ownerImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-72D9-1E32",
                 wiegandCode: "FC:084-ID:10494",
@@ -104,6 +110,8 @@ const SFS_INITIAL_DATA = {
             model: "NMAX 155 ABS",
             year: "2023",
             color: "Matte Dark Blue",
+            ownerImage: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80",
             rfid: {
                 tagId: "E280-6901-83FA-6D45",
                 wiegandCode: "FC:084-ID:10495",
@@ -130,6 +138,8 @@ const SFS_INITIAL_DATA = {
             model: "Xpander Cross",
             year: "2022",
             color: "Sunrise Orange",
+            ownerImage: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80",
             rfid: null, // Pending RFID generation
             registeredAt: "2026-02-14T10:20:00"
         }
@@ -141,6 +151,8 @@ const SFS_INITIAL_DATA = {
             gate: "Gate 1 - Main North Entrance",
             plateNumber: "NAK 4821",
             ownerName: "Juan Dela Cruz",
+            ownerImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
             vehicleModel: "Toyota Fortuner",
             rfidTag: "E280-6901-44B2-9A01",
             direction: "ENTRY",
@@ -153,6 +165,8 @@ const SFS_INITIAL_DATA = {
             gate: "Gate 1 - Main North Exit",
             plateNumber: "CBC 7781",
             ownerName: "Engr. Roberto Tan",
+            ownerImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1559416523-140ddc3d238c?auto=format&fit=crop&w=600&q=80",
             vehicleModel: "Ford Ranger",
             rfidTag: "E280-6901-72D9-1E32",
             direction: "EXIT",
@@ -165,6 +179,8 @@ const SFS_INITIAL_DATA = {
             gate: "Gate 2 - East Resident Lane",
             plateNumber: "DAB 9210",
             ownerName: "Atty. Maria Santos",
+            ownerImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80",
             vehicleModel: "Honda Civic",
             rfidTag: "E280-6901-57C3-8B14",
             direction: "ENTRY",
@@ -177,6 +193,8 @@ const SFS_INITIAL_DATA = {
             gate: "Gate 1 - Main North Entrance",
             plateNumber: "UNKNOWN",
             ownerName: "Visitor / Unregistered",
+            ownerImage: "",
+            vehicleImage: "",
             vehicleModel: "Unknown Vehicle",
             rfidTag: "E280-9999-0000-DEAD",
             direction: "ENTRY",
