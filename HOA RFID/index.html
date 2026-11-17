@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFSPh1 Homeowners Association | Vehicle Registration & RFID Management Portal</title>
+    <meta name="description" content="Official SFSPh1 Homeowners Association Vehicle Registration, RFID Tag Generation, and Smart Barrier Access Control System.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS (v3 CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        sfs: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            dark: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- QRCode.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- JsBarcode CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-sky-500 selection:text-white min-h-screen flex flex-col">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 flex flex-col gap-2.5 z-50"></div>
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-slate-200 text-xs py-2 px-4 border-b border-sky-900/50">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Portal
+                </span>
+                <span class="font-medium text-slate-300">San Francisco South Phase 1 (SFSPh1) HOA • Automated RFID Gate Access Active</span>
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span class="hidden sm:inline"><i class="fa-solid fa-shield-halved text-sky-400 mr-1"></i> UHF Gen2 865-928MHz</span>
+                <span class="hidden md:inline"><i class="fa-solid fa-headset text-emerald-400 mr-1"></i> Security: (02) 8876-5432</span>
+                <button onclick="app.openPosterModal()" class="text-sky-300 hover:text-white font-semibold underline underline-offset-2 flex items-center gap-1">
+                    <i class="fa-solid fa-qrcode"></i> Registration QR Flyer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- HOA Branding / Logo -->
+                <div class="flex items-center gap-3.5">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-600 to-slate-900 flex items-center justify-center text-white shadow-md shadow-sky-600/20 ring-2 ring-sky-500/20">
+                        <i class="fa-solid fa-tree-city text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-slate-900 tracking-tight text-xl">SFSPh1</span>
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200 uppercase tracking-wider">HOA Portal</span>
+                        </div>
+                        <p class="text-xs text-slate-500 font-medium">San Francisco South Phase 1 Homeowners Association</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden lg:flex items-center gap-1">
+                    <a href="#overview" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-sky-600 hover:bg-slate-100 transition-colors">Overview</a>
+                    <a href="#register" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-sky-600 hover:bg-slate-100 transition-colors">Vehicle Registration</a>
+                    <a href="#gateSimulator" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-sky-600 hover:bg-slate-100 transition-colors">Smart Gate Simulator</a>
+                    <a href="#registrySection" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-sky-600 hover:bg-slate-100 transition-colors">RFID Registry</a>
+                    <a href="#guidelines" class="px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-sky-600 hover:bg-slate-100 transition-colors">Guidelines</a>
+                </nav>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-2.5">
+                    <button onclick="app.openPosterModal()" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-semibold text-xs shadow-sm transition-all">
+                        <i class="fa-solid fa-qrcode text-sky-600"></i>
+                        <span>Scan / Print QR</span>
+                    </button>
+                    <a href="#register" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 hover:from-sky-700 hover:to-sky-800 transition-all">
+                        <i class="fa-solid fa-car"></i>
+                        <span>Register Vehicle</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+
+        <!-- HERO SECTION -->
+        <section id="overview" class="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 text-white py-16 lg:py-20 border-b border-slate-800">
+            <!-- Background Radial Glow -->
+            <div class="absolute top-0 right-1/4 w-96 h-96 bg-sky-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    
+                    <!-- Left Column: Copy & Value Proposition -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-950/80 border border-sky-500/30 text-sky-300 text-xs font-semibold backdrop-blur-sm">
+                            <i class="fa-solid fa-tower-broadcast text-sky-400"></i>
+                            <span>Official SFSPh1 HOA Vehicle Access Portal</span>
+                        </div>
+
+                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                            Smart <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-emerald-400">RFID Access & Vehicle Registration</span> for SFS Phase 1
+                        </h1>
+
+                        <p class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
+                            Fast, secure, and contactless subdivision barrier access for all registered homeowners, tenants, and authorized vehicles. Scan the official QR code to register your vehicle in minutes, or instantly generate and print verified UHF RFID windshield decals.
+                        </p>
+
+                        <!-- Key Pillars Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 backdrop-blur-sm">
+                                <div class="text-sky-400 mb-1.5"><i class="fa-solid fa-qrcode text-xl"></i></div>
+                                <h3 class="font-bold text-sm text-slate-100">QR Code Scan</h3>
+                                <p class="text-xs text-slate-400">Mobile-ready form for phone cameras</p>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 backdrop-blur-sm">
+                                <div class="text-emerald-400 mb-1.5"><i class="fa-solid fa-microchip text-xl"></i></div>
+                                <h3 class="font-bold text-sm text-slate-100">RFID Generation</h3>
+                                <p class="text-xs text-slate-400">EPC Gen2 UHF 96-bit unique IDs</p>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 backdrop-blur-sm col-span-2 sm:col-span-1">
+                                <div class="text-amber-400 mb-1.5"><i class="fa-solid fa-id-card-clip text-xl"></i></div>
+                                <h3 class="font-bold text-sm text-slate-100">Decal Studio</h3>
+                                <p class="text-xs text-slate-400">Printable windshield RFID pass</p>
+                            </div>
+                        </div>
+
+                        <!-- CTA Row -->
+                        <div class="flex flex-wrap items-center gap-3.5 pt-2">
+                            <a href="#register" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold text-sm shadow-lg shadow-sky-500/25 flex items-center gap-2 transition-all">
+                                <i class="fa-solid fa-file-signature"></i>
+                                <span>Register Vehicle Now</span>
+                            </a>
+                            <a href="#gateSimulator" class="px-6 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 font-semibold text-sm flex items-center gap-2 transition-all">
+                                <i class="fa-solid fa-road-barrier text-amber-400"></i>
+                                <span>Try Gate Simulator</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Live QR Code & Quick Registration Widget Card -->
+                    <div class="lg:col-span-5">
+                        <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-2xl backdrop-blur-md relative overflow-hidden">
+                            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-sky-500/10 rounded-full blur-2xl"></div>
+
+                            <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-700/80">
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Mobile Fast-Pass</span>
+                                    <h3 class="font-bold text-lg text-white">Vehicle Registration QR</h3>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    <i class="fa-solid fa-camera mr-1"></i> Scan Ready
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-center gap-5">
+                                <!-- QR Display Container -->
+                                <div class="bg-white p-3 rounded-xl shadow-inner border border-slate-200 flex flex-col items-center shrink-0">
+                                    <div id="registrationQrCode" class="w-[140px] h-[140px] flex items-center justify-center"></div>
+                                    <span class="text-[10px] font-mono text-slate-600 mt-2 font-bold tracking-tight">sfsph1-hoa.ph/reg</span>
+                                </div>
+
+                                <!-- QR Explanation & Quick Tips -->
+                                <div class="space-y-3 text-xs text-slate-300">
+                                    <p class="font-medium text-slate-200">
+                                        Scan with your iPhone or Android camera to open the resident vehicle registration form directly on your smartphone.
+                                    </p>
+                                    <ul class="space-y-1.5 text-slate-400">
+                                        <li class="flex items-start gap-2">
+                                            <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                            <span>No app installation required</span>
+                                        </li>
+                                        <li class="flex items-start gap-2">
+                                            <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                            <span>Pre-configured for Phase 1 Homeowners</span>
+                                        </li>
+                                        <li class="flex items-start gap-2">
+                                            <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+                                            <span>Auto RFID tag provisioning</span>
+                                        </li>
+                                    </ul>
+
+                                    <button onclick="app.openPosterModal()" class="w-full mt-2 py-2 px-3 rounded-lg bg-sky-950/60 hover:bg-sky-900 border border-sky-500/40 text-sky-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
+                                        <i class="fa-solid fa-print"></i>
+                                        <span>Download / Print Guardhouse Flyer</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Footer note in card -->
+                            <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
+                                <span>Official SFSPh1 HOA Security</span>
+                                <span class="font-mono text-slate-500">Facility Code: 084</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS COUNTER STRIP -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <div class="glass-panel rounded-2xl p-5 shadow-lg border border-slate-200/80 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0 border border-blue-100">
+                        <i class="fa-solid fa-car-side"></i>
+                    </div>
+                    <div>
+                        <div id="statTotalVehicles" class="text-2xl font-black text-slate-900 font-mono">0</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Registered Vehicles</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 shadow-lg border border-slate-200/80 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 border border-emerald-100">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <div>
+                        <div id="statActiveRfids" class="text-2xl font-black text-emerald-600 font-mono">0</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Active RFID Tags</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 shadow-lg border border-slate-200/80 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 border border-amber-100">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <div id="statPendingRfids" class="text-2xl font-black text-amber-600 font-mono">0</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pending Tag Issuance</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 shadow-lg border border-slate-200/80 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shrink-0 border border-purple-100">
+                        <i class="fa-solid fa-road-barrier"></i>
+                    </div>
+                    <div>
+                        <div id="statGateEntries" class="text-2xl font-black text-purple-600 font-mono">0</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Gate Access Logs</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION: VEHICLE REGISTRATION FORM -->
+        <section id="register" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-address-card"></i> Homeowner Enrollment
+                </span>
+                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">SFSPh1 Homeowners Vehicle Registration</h2>
+                <p class="text-sm text-slate-500 mt-2">
+                    Register your vehicle to obtain official SFSPh1 HOA clearance and generate your unique Radio Frequency Identification (RFID) access credential.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left 8 cols: Interactive Registration Form -->
+                <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 shadow-md p-6 sm:p-8">
+                    
+                    <!-- Quick Autofill Bar for testing convenience -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 mb-6">
+                        <span class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-magic-sparkles text-sky-600"></i> Fast Demo Autofill:
+                        </span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" onclick="app.fillSampleForm('sedan')" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-300 hover:border-sky-500 hover:text-sky-600 rounded-lg shadow-sm transition-colors">
+                                <i class="fa-solid fa-car-side text-blue-500 mr-1"></i> Sample Sedan
+                            </button>
+                            <button type="button" onclick="app.fillSampleForm('suv')" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-300 hover:border-emerald-500 hover:text-emerald-600 rounded-lg shadow-sm transition-colors">
+                                <i class="fa-solid fa-truck-pickup text-emerald-500 mr-1"></i> Sample SUV
+                            </button>
+                            <button type="button" onclick="app.fillSampleForm('moto')" class="px-2.5 py-1 text-xs font-semibold bg-white border border-slate-300 hover:border-amber-500 hover:text-amber-600 rounded-lg shadow-sm transition-colors">
+                                <i class="fa-solid fa-motorcycle text-amber-500 mr-1"></i> Sample Moto
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="vehicleRegistrationForm" class="space-y-6">
+                        
+                        <!-- Part 1: Resident Information -->
+                        <div>
+                            <div class="flex items-center gap-2 pb-2 mb-4 border-b border-slate-100">
+                                <span class="w-6 h-6 rounded-full bg-sky-600 text-white font-bold text-xs flex items-center justify-center">1</span>
+                                <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider">Homeowner & Resident Profile</h3>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="ownerName">
+                                        Full Name of Owner <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="ownerName" name="ownerName" required placeholder="e.g. Juan Dela Cruz" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="ownerType">
+                                        Resident Status <span class="text-red-500">*</span>
+                                    </label>
+                                    <select id="ownerType" name="ownerType" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium bg-white">
+                                        <option value="Homeowner">Homeowner / Property Owner</option>
+                                        <option value="Tenant">Registered Tenant</option>
+                                        <option value="Authorized Driver">Authorized Resident Driver</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="contact">
+                                        Mobile Phone Number <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="contact" name="contact" required placeholder="0917-000-0000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="email">
+                                        Email Address <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" id="email" name="email" required placeholder="resident@email.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 2: SFS Phase 1 Address -->
+                        <div>
+                            <div class="flex items-center gap-2 pb-2 mb-4 border-b border-slate-100">
+                                <span class="w-6 h-6 rounded-full bg-sky-600 text-white font-bold text-xs flex items-center justify-center">2</span>
+                                <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider">Phase 1 Property Address</h3>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="blockLot">
+                                        Block & Lot Number <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="blockLot" name="blockLot" required placeholder="e.g. Blk 4 Lot 12" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="street">
+                                        Phase 1 Street Name <span class="text-red-500">*</span>
+                                    </label>
+                                    <select id="street" name="street" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium bg-white">
+                                        <option value="Mahogany Street">Mahogany Street</option>
+                                        <option value="Acacia Avenue">Acacia Avenue</option>
+                                        <option value="Narra Boulevard">Narra Boulevard</option>
+                                        <option value="Palm Drive">Palm Drive</option>
+                                        <option value="Pine Street">Pine Street</option>
+                                        <option value="Cedar Lane">Cedar Lane</option>
+                                        <option value="South Main Boulevard">South Main Boulevard</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 3: Vehicle Information -->
+                        <div>
+                            <div class="flex items-center gap-2 pb-2 mb-4 border-b border-slate-100">
+                                <span class="w-6 h-6 rounded-full bg-sky-600 text-white font-bold text-xs flex items-center justify-center">3</span>
+                                <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider">Vehicle Details</h3>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="vehicleType">
+                                        Vehicle Type <span class="text-red-500">*</span>
+                                    </label>
+                                    <select id="vehicleType" name="vehicleType" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium bg-white">
+                                        <option value="Sedan">Sedan / Hatchback</option>
+                                        <option value="SUV">SUV / Crossover</option>
+                                        <option value="Pickup Truck">Pickup Truck</option>
+                                        <option value="MPV / Van">MPV / Van</option>
+                                        <option value="Motorcycle">Motorcycle / Scooter</option>
+                                        <option value="E-Vehicle">Electric Vehicle (EV)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="plateNumber">
+                                        Plate No. / Conduction <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="plateNumber" name="plateNumber" required placeholder="e.g. NAK 4821" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-mono font-bold uppercase">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="make">
+                                        Make (Brand) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="make" name="make" required placeholder="e.g. Toyota" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="model">
+                                        Model & Variant <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="model" name="model" required placeholder="e.g. Fortuner GR-S" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="year">
+                                        Model Year
+                                    </label>
+                                    <input type="text" id="year" name="year" placeholder="2024" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="color">
+                                        Body Color
+                                    </label>
+                                    <input type="text" id="color" name="color" placeholder="e.g. Pearl White" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Part 4: RFID Provisioning Option -->
+                        <div class="p-4 rounded-xl bg-sky-50/80 border border-sky-100 flex items-start gap-3">
+                            <input type="checkbox" id="autoIssueRfid" name="autoIssueRfid" checked class="mt-1 w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+                            <label for="autoIssueRfid" class="text-xs text-slate-700">
+                                <span class="font-bold text-slate-900 block mb-0.5">Generate and Issue Active UHF RFID Tag Immediately</span>
+                                Automatically assigns an EPC Gen2 96-bit RFID hexadecimal tag and Wiegand 26-bit facility access code for SFSPh1 barrier gates upon submission.
+                            </label>
+                        </div>
+
+                        <!-- Form Submit Button -->
+                        <div class="flex items-center justify-end gap-3 pt-2">
+                            <button type="reset" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-semibold text-xs transition-colors">
+                                Reset Form
+                            </button>
+                            <button type="submit" class="px-7 py-3 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white font-bold text-sm shadow-md shadow-sky-600/25 flex items-center gap-2 transition-all">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Complete Registration & Generate RFID</span>
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+
+                <!-- Right 4 cols: Requirements & Mobile Instructions -->
+                <div class="lg:col-span-4 space-y-6">
+                    
+                    <!-- Requirement Card -->
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-md p-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-sm">Registration Requirements</h3>
+                        </div>
+
+                        <ul class="space-y-3 text-xs text-slate-600">
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                                <span><b>LTO Official Receipt & Certificate of Registration (OR/CR)</b> matching vehicle plate number.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                                <span><b>Valid Government-Issued ID</b> or SFSPh1 Homeowners Association Membership Certificate.</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                                <span><b>Notarized Lease Contract</b> (if applicant is a registered Phase 1 tenant).</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                                <span>Settlement of current HOA Monthly Association Dues.</span>
+                            </li>
+                        </ul>
+
+                        <div class="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5 shrink-0"></i>
+                            <span>Maximum of 3 RFID vehicle stickers issued per household lot. Additional vehicles subject to HOA board approval.</span>
+                        </div>
+                    </div>
+
+                    <!-- RFID Tag Types Explained -->
+                    <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-satellite-dish text-sky-400"></i>
+                                <span>UHF RFID Tag Types</span>
+                            </h3>
+                            <span class="text-[10px] font-mono text-sky-400 font-bold">865-928 MHz</span>
+                        </div>
+
+                        <div class="space-y-3 text-xs">
+                            <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80">
+                                <div class="font-bold text-sky-300 flex items-center gap-1.5 mb-1">
+                                    <i class="fa-solid fa-car"></i> Windshield Decal (Inside Mount)
+                                </div>
+                                <p class="text-slate-400 text-[11px]">
+                                    Tamper-proof destructible film sticker applied to inner windshield glass behind the rearview mirror.
+                                </p>
+                            </div>
+
+                            <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80">
+                                <div class="font-bold text-emerald-300 flex items-center gap-1.5 mb-1">
+                                    <i class="fa-solid fa-motorcycle"></i> Headlight RFID Sticker
+                                </div>
+                                <p class="text-slate-400 text-[11px]">
+                                    Waterproof, UV-resistant transparent tag designed specifically for motorcycle headlamps.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION: SMART BARRIER GATE & RFID READER SIMULATOR -->
+        <section id="gateSimulator" class="py-16 bg-slate-900 text-white border-y border-slate-800 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center max-w-3xl mx-auto mb-10">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-microchip"></i> Interactive Guardhouse Simulator
+                    </span>
+                    <h2 class="text-3xl font-extrabold text-white tracking-tight">Smart Barrier Gate & RFID Sensor Reader</h2>
+                    <p class="text-sm text-slate-400 mt-2">
+                        Simulate the live behavior of SFSPh1 electronic barrier gate when an authorized or unauthorized vehicle approaches the long-range UHF RFID transceiver antenna.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <!-- Left 6 cols: Visual 3D Barrier Gate & Scanner Display -->
+                    <div class="lg:col-span-6 bg-slate-950/80 rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-2xl flex flex-col items-center">
+                        
+                        <!-- Gate Overhead Header Sign -->
+                        <div class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 mb-6 text-center shadow-md flex items-center justify-between">
+                            <span class="text-[10px] font-mono text-slate-400 uppercase">SFSPh1 ACCESS CONTROL</span>
+                            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-tower-broadcast animate-pulse"></i> RFID ACTIVE LANE 1
+                            </span>
+                            <span class="text-[10px] font-mono text-emerald-400">ONLINE</span>
+                        </div>
+
+                        <!-- Guardhouse LED Status Screen -->
+                        <div class="w-full bg-slate-900 border-2 border-slate-800 rounded-xl p-4 text-center mb-8 shadow-inner">
+                            <div id="gateStatusDisplay" class="text-lg font-bold text-slate-300 font-mono">
+                                <i class="fa-solid fa-tower-broadcast text-sky-400 mr-2"></i>GATE READY - TAP RFID
+                            </div>
+                            <div id="gateSubtextDisplay">
+                                <span class="text-xs text-slate-400">Drive up close to RFID transceiver (within 3-5 meters)</span>
+                            </div>
+                        </div>
+
+                        <!-- Physical Gate Barrier & Transceiver Graphic -->
+                        <div class="relative w-full max-w-sm h-48 flex items-end justify-center mb-4">
+                            
+                            <!-- Left: RFID Antenna Transceiver Tower -->
+                            <div class="absolute left-6 bottom-0 flex flex-col items-center">
+                                <div id="gateRfidSensor" class="w-12 h-14 rounded-lg bg-sky-900 border-2 border-sky-400 flex items-center justify-center text-sky-200 text-lg shadow-lg shadow-sky-500/20 transition-all rfid-wave">
+                                    <i class="fa-solid fa-wifi rotate-90"></i>
+                                </div>
+                                <div class="w-3 h-16 bg-slate-700 border-x border-slate-600"></div>
+                                <div class="w-8 h-2 bg-slate-600 rounded-t"></div>
+                                <span class="text-[9px] font-mono text-slate-500 mt-1">UHF SENSOR</span>
+                            </div>
+
+                            <!-- Right: Gate Barrier Pillar and Arm -->
+                            <div class="absolute right-8 bottom-0 flex flex-col items-start gate-arm-container">
+                                <!-- Status LED on pillar top -->
+                                <div class="flex items-center gap-2 mb-1 pl-3">
+                                    <div id="simulatorLed" class="led-indicator red"></div>
+                                    <span class="text-[10px] font-mono text-slate-400">STATUS</span>
+                                </div>
+
+                                <!-- Motor Pillar Housing -->
+                                <div class="relative">
+                                    <div class="gate-pillar w-12 h-28 rounded-t-lg flex flex-col items-center justify-center text-white border-2 border-amber-600/60 shadow-lg">
+                                        <i class="fa-solid fa-lock text-slate-900 text-xs"></i>
+                                    </div>
+                                    
+                                    <!-- Rotating Barrier Boom Arm (pivot point at left) -->
+                                    <div id="simulatorGateArm" class="gate-arm absolute top-4 -left-52"></div>
+                                </div>
+                                <div class="w-16 h-3 bg-slate-800 border border-slate-700 -ml-2 rounded-t"></div>
+                            </div>
+
+                            <!-- Road Lane Markings in background -->
+                            <div class="w-full h-8 border-b-2 border-dashed border-amber-500/40 mb-1 flex items-center justify-center">
+                                <span class="text-[10px] font-mono tracking-widest text-slate-600 uppercase">═══ SFSPh1 GATE ENTRY LANE ═══</span>
+                            </div>
+
+                        </div>
+
+                        <div class="text-[11px] text-slate-500 font-mono">
+                            Auto-closing mechanism after 4.5 seconds • Integrated loop detector
+                        </div>
+
+                    </div>
+
+                    <!-- Right 6 cols: Control Console for Testing -->
+                    <div class="lg:col-span-6 bg-slate-800/90 rounded-2xl p-6 sm:p-8 border border-slate-700 shadow-xl space-y-5">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+                            <h3 class="font-bold text-base text-white flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-sky-400"></i>
+                                <span>RFID Gate Testing Console</span>
+                            </h3>
+                            <span class="text-xs text-slate-400">Simulate vehicle approach</span>
+                        </div>
+
+                        <!-- Choose Registered Vehicle -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 uppercase mb-1.5" for="simulatorVehicleSelect">
+                                Select Registered Vehicle / Scenario
+                            </label>
+                            <select id="simulatorVehicleSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                                <!-- Populated dynamically by app.js -->
+                            </select>
+                        </div>
+
+                        <!-- Manual RFID Tag Input -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 uppercase mb-1.5" for="manualRfidInput">
+                                    RFID Tag ID (EPC Hex)
+                                </label>
+                                <input type="text" id="manualRfidInput" placeholder="e.g. E280-6901-44B2-9A01" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-sky-400 text-xs font-mono font-bold focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 uppercase mb-1.5" for="simulatorGateSelect">
+                                    Gate Barrier Location
+                                </label>
+                                <select id="simulatorGateSelect" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                                    <option value="Gate 1 - Main North Entrance">Gate 1 - Main North Entrance</option>
+                                    <option value="Gate 1 - Main North Exit">Gate 1 - Main North Exit</option>
+                                    <option value="Gate 2 - East Resident Lane">Gate 2 - East Resident Lane</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 uppercase mb-1.5" for="simulatorDirectionSelect">
+                                    Direction
+                                </label>
+                                <select id="simulatorDirectionSelect" class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                                    <option value="ENTRY">ENTRY (Entering SFSPh1)</option>
+                                    <option value="EXIT">EXIT (Leaving Subdivision)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 uppercase mb-1.5">
+                                    Sound Effects
+                                </label>
+                                <div class="flex items-center gap-2 h-10 px-3 bg-slate-900 border border-slate-700 rounded-xl">
+                                    <input type="checkbox" id="audioToggle" checked onchange="app.state.audioEnabled = this.checked" class="w-4 h-4 text-sky-600 rounded">
+                                    <label for="audioToggle" class="text-xs text-slate-300 cursor-pointer">Web Audio Beeps</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tap Sensor Button -->
+                        <button id="simulatorTapBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-sky-500 via-sky-600 to-emerald-600 hover:from-sky-600 hover:to-emerald-700 text-white font-extrabold text-sm shadow-xl shadow-sky-600/30 flex items-center justify-center gap-2 transition-all transform active:scale-95">
+                            <i class="fa-solid fa-satellite-dish text-lg"></i>
+                            <span>TAP / SCAN RFID TAG AT SENSOR</span>
+                        </button>
+
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                            <span><i class="fa-solid fa-circle-info text-sky-400 mr-1"></i> Valid tags trigger gate lift & audio chime</span>
+                            <span>Unregistered tags trigger denied alert</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Recent Gate Access Audit Log Table -->
+                <div class="mt-12 bg-slate-950/70 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="p-4 sm:p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-clipboard-list text-sky-400 text-lg"></i>
+                            <div>
+                                <h3 class="font-bold text-sm text-white">Live Gate Access Audit Logs</h3>
+                                <p class="text-xs text-slate-400">Timestamped records of barrier entries and exits</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="app.clearGateLogs()" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors">
+                                <i class="fa-solid fa-trash-can mr-1"></i> Clear Log
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="px-4 py-3">Timestamp</th>
+                                    <th class="px-4 py-3">Direction & Gate</th>
+                                    <th class="px-4 py-3">Vehicle Plate & Make</th>
+                                    <th class="px-4 py-3">Registered Resident</th>
+                                    <th class="px-4 py-3">RFID Tag ID</th>
+                                    <th class="px-4 py-3">Access Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gateLogsTableBody" class="divide-y divide-slate-800/60 font-sans">
+                                <!-- Populated dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION: VEHICLES & RFID REGISTRY DATABASE -->
+        <section id="registrySection" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-database"></i> Master Registry
+                    </span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">SFSPh1 Vehicle & RFID Database</h2>
+                    <p class="text-sm text-slate-500 mt-1">Manage registered homeowner vehicles, issue new RFID tags, and print windshield access decals.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <button onclick="app.exportToCSV()" class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-sm flex items-center gap-2 transition-colors">
+                        <i class="fa-solid fa-file-csv text-emerald-600 text-sm"></i>
+                        <span>Export CSV</span>
+                    </button>
+                    <button id="btnResetSampleData" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs transition-colors">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Demo Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                
+                <!-- Filter Tabs -->
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full md:w-auto">
+                    <button class="filter-tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-sky-600 text-white shadow-sm flex items-center gap-1.5" data-filter="all">
+                        <span>All Vehicles</span>
+                        <span id="badgeFilterAll" class="px-1.5 py-0.2 rounded-full text-[10px] bg-sky-800 text-sky-100">0</span>
+                    </button>
+                    <button class="filter-tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-slate-200 flex items-center gap-1.5" data-filter="active">
+                        <span>Active RFID</span>
+                        <span id="badgeFilterActive" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-700">0</span>
+                    </button>
+                    <button class="filter-tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-slate-200 flex items-center gap-1.5" data-filter="pending">
+                        <span>Pending Tag</span>
+                        <span id="badgeFilterPending" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-700">0</span>
+                    </button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative w-full md:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="registrySearchInput" placeholder="Search plate, owner, block, or RFID..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-xs font-medium">
+                </div>
+
+            </div>
+
+            <!-- Vehicles Table -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-3.5">Vehicle Details</th>
+                                <th class="px-6 py-3.5">Registered Owner</th>
+                                <th class="px-6 py-3.5">Phase 1 Address</th>
+                                <th class="px-6 py-3.5">RFID EPC Tag & Wiegand</th>
+                                <th class="px-6 py-3.5">Tag Status</th>
+                                <th class="px-6 py-3.5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehiclesTableBody" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically by app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: COMMUNITY GUIDELINES & FAQS -->
+        <section id="guidelines" class="py-16 bg-slate-100 border-t border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-800 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-book-open"></i> SFSPh1 Regulations
+                    </span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">HOA Vehicle & RFID Access Guidelines</h2>
+                    <p class="text-sm text-slate-500 mt-2">Frequently asked questions regarding RFID decal issuance, gate speed limits, and visitor policies.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg mb-4">
+                            <i class="fa-solid fa-hand-holding-hand"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base mb-2">How to Claim Your RFID Decal</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Once your vehicle is registered online, present your vehicle at the SFSPh1 HOA Admin Office (Mon-Sat, 8AM - 5PM) for authorized installation by security personnel on the designated windshield position.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg mb-4">
+                            <i class="fa-solid fa-gauge-high"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base mb-2">Subdivision Speed Limit</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Strict <b>20 km/h speed limit</b> is enforced across all Phase 1 avenues and streets. Please slow down when approaching barrier gates to allow the long-range RFID reader to register your tag safely.
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg mb-4">
+                            <i class="fa-solid fa-car-burst"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-base mb-2">Replacement & Tamper Policy</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            RFID tags have tamper-evident die-cuts. Any attempt to peel or transfer the sticker between vehicles will permanently disable the antenna. Replacement stickers cost ₱250 upon submission of an affidavit.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                
+                <div class="md:col-span-2 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white font-bold text-lg">
+                            <i class="fa-solid fa-tree-city"></i>
+                        </div>
+                        <span class="font-bold text-white text-base">SFSPh1 Homeowners Association</span>
+                    </div>
+                    <p class="text-slate-400 max-w-md leading-relaxed">
+                        San Francisco South Phase 1 (SFSPh1) Gated Community. Dedicated to community safety, neighborly progress, and smart security systems.
+                    </p>
+                    <div class="flex items-center gap-3 pt-2">
+                        <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono text-[11px]">Facility Code: 084</span>
+                        <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono text-[11px]">UHF EPC Gen2</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-200 uppercase tracking-wider mb-3">Quick Navigation</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#overview" class="hover:text-white transition-colors">Portal Home</a></li>
+                        <li><a href="#register" class="hover:text-white transition-colors">Vehicle Registration</a></li>
+                        <li><a href="#gateSimulator" class="hover:text-white transition-colors">Gate Barrier Simulator</a></li>
+                        <li><a href="#registrySection" class="hover:text-white transition-colors">RFID Tag Registry</a></li>
+                        <li><a href="#guidelines" class="hover:text-white transition-colors">Community Rules</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-200 uppercase tracking-wider mb-3">Guardhouse & Admin</h4>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><i class="fa-solid fa-location-dot text-sky-400 mr-2"></i> Phase 1 Clubhouse, South Blvd</li>
+                        <li><i class="fa-solid fa-phone text-emerald-400 mr-2"></i> +63 (02) 8876-5432</li>
+                        <li><i class="fa-solid fa-mobile-screen text-amber-400 mr-2"></i> 0917-123-4567 (Security 24/7)</li>
+                        <li><i class="fa-solid fa-envelope text-purple-400 mr-2"></i> admin@sfsph1-hoa.ph</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500">
+                <p>© 2026 SFSPh1 Homeowners Association. All rights reserved.</p>
+                <div class="flex items-center gap-4">
+                    <span>RFID Security Version 2.4</span>
+                    <span>•</span>
+                    <a href="#overview" class="hover:text-slate-300">Back to Top ↑</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================================
+         MODAL 1: REALISTIC RFID WINDSHIELD DECAL & PASS STUDIO
+         ============================================================ -->
+    <div id="decalModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative overflow-hidden animate-fadeIn">
+            
+            <button onclick="app.closeDecalStudio()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="mb-5">
+                <span class="text-[11px] font-bold text-sky-600 uppercase tracking-wider">Official SFSPh1 Access Decal</span>
+                <h3 class="text-xl font-black text-slate-900">Vehicle RFID Windshield Pass</h3>
+                <p class="text-xs text-slate-500">High-security UHF RFID pass for windshield or headlight installation.</p>
+            </div>
+
+            <!-- PHYSICAL RFID DECAL BADGE PREVIEW (Also printable target) -->
+            <div class="flex justify-center my-4">
+                <div id="printableArea" class="rfid-decal-card border-2 border-slate-800 p-4 flex flex-col justify-between rfid-antenna-bg">
+                    
+                    <!-- Decal Header -->
+                    <div class="flex items-center justify-between border-b-2 border-slate-800 pb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                                <i class="fa-solid fa-tree-city"></i>
+                            </div>
+                            <div>
+                                <div class="text-[11px] font-black tracking-tight text-slate-900 uppercase">SFSPh1 HOA PASS</div>
+                                <div class="text-[8px] text-slate-500 font-bold uppercase tracking-wider">San Francisco South Ph1</div>
+                            </div>
+                        </div>
+
+                        <!-- Security Holographic Seal -->
+                        <div class="security-seal px-2 py-0.5 rounded-full text-[9px] font-black text-amber-950 uppercase tracking-tighter flex items-center gap-1 shadow-sm">
+                            <i class="fa-solid fa-certificate"></i> AUTHENTIC
+                        </div>
+                    </div>
+
+                    <!-- Center: Plate Number & Vehicle Classification -->
+                    <div class="my-2 flex items-center justify-between">
+                        <div>
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">OFFICIAL PLATE NO.</div>
+                            <div id="decalPlate" class="text-2xl sm:text-3xl font-black font-mono tracking-wider text-slate-900">NAK 4821</div>
+                            <div id="decalModel" class="text-[10px] font-bold text-slate-600 truncate max-w-[200px]">Toyota Fortuner (2024)</div>
+                        </div>
+
+                        <div class="text-right">
+                            <span id="decalType" class="px-2.5 py-1 rounded-md text-xs font-extrabold bg-slate-900 text-white tracking-widest uppercase">
+                                SUV
+                            </span>
+                            <div id="decalAddress" class="text-[9px] font-semibold text-slate-500 mt-1">Blk 4 Lot 12</div>
+                            <div id="decalOwner" class="text-[9px] font-bold text-slate-700 truncate max-w-[120px]">Juan Dela Cruz</div>
+                        </div>
+                    </div>
+
+                    <!-- Decal Microstrip RFID & Barcode Area -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 flex items-center justify-between gap-2">
+                        <div class="space-y-0.5 flex-1">
+                            <div class="flex items-center gap-1 text-[8px] font-mono text-slate-500">
+                                <i class="fa-solid fa-microchip text-sky-600"></i>
+                                <span id="decalTagId" class="font-bold text-slate-800">E280-6901-44B2-9A01</span>
+                            </div>
+                            <canvas id="decalBarcodeCanvas" class="w-full h-7 block"></canvas>
+                            <div class="flex items-center justify-between text-[8px] font-mono text-slate-500">
+                                <span id="decalWiegand">FC:084-ID:10492</span>
+                                <span id="decalExpiry" class="font-bold text-emerald-700">VALID THRU: 2027-01-15</span>
+                            </div>
+                        </div>
+
+                        <!-- Embedded Verification QR -->
+                        <div id="decalQrCode" class="shrink-0 bg-white p-1 rounded border border-slate-200 w-16 h-16 flex items-center justify-center"></div>
+                    </div>
+
+                    <!-- Bottom Safety & Serial strip -->
+                    <div class="flex items-center justify-between pt-1 text-[8px] font-mono text-slate-400">
+                        <span id="decalSerial">SFS1-UHF-2026-00104</span>
+                        <span id="decalTagType">Windshield Decal (Anti-Tamper)</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Modal Info and Controls -->
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                    <span id="decalStatusBadge" class="px-2 py-0.5 rounded text-xs font-bold uppercase bg-emerald-100 text-emerald-800">ACTIVE RFID PASS</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="app.closeDecalStudio()" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition-colors">
+                        Close
+                    </button>
+                    <button onclick="app.printDecal()" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print RFID Pass</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL 2: OFFICIAL QR CODE POSTER / GUARDHOUSE FLYER
+         ============================================================ -->
+    <div id="qrPosterModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative animate-fadeIn">
+            
+            <button onclick="app.closePosterModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Flyer Card Preview -->
+            <div class="text-center space-y-4">
+                
+                <div class="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center text-2xl mx-auto shadow-md shadow-sky-600/20">
+                    <i class="fa-solid fa-tree-city"></i>
+                </div>
+
+                <div>
+                    <span class="text-[10px] font-bold tracking-widest text-sky-600 uppercase">San Francisco South Phase 1</span>
+                    <h3 class="text-xl font-black text-slate-900">Vehicle Registration QR Notice</h3>
+                    <p class="text-xs text-slate-500 mt-1">Official Bulletin Board & Guardhouse Notice</p>
+                </div>
+
+                <!-- Big High-Res QR Display -->
+                <div class="bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-sky-300 flex flex-col items-center justify-center">
+                    <div id="posterModalQrCode" class="w-48 h-48 bg-white p-3 rounded-xl shadow-sm flex items-center justify-center"></div>
+                    <div class="mt-3 font-mono font-bold text-xs text-slate-700">SCAN TO REGISTER VEHICLE</div>
+                    <div class="text-[10px] text-slate-400">Open smartphone camera & point at QR code</div>
+                </div>
+
+                <div class="space-y-1 text-xs text-slate-600 bg-sky-50 p-3.5 rounded-xl border border-sky-100 text-left">
+                    <div class="font-bold text-sky-900 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved text-sky-600"></i> Fast Instructions for Residents:
+                    </div>
+                    <ol class="list-decimal list-inside text-[11px] text-slate-600 space-y-0.5">
+                        <li>Point your phone camera at the QR code.</li>
+                        <li>Fill out your homeowner and vehicle details.</li>
+                        <li>RFID tag will be assigned and ready at the guardhouse.</li>
+                    </ol>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center gap-2 pt-2">
+                    <button onclick="app.closePosterModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors">
+                        Dismiss
+                    </button>
+                    <button onclick="window.print()" class="w-1/2 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/20 flex items-center justify-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print Flyer</span>
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Core App Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
