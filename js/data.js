@@ -144,6 +144,22 @@ const SFS_INITIAL_DATA = {
             registeredAt: "2026-02-14T10:20:00"
         }
     ],
+    visitors: [
+        {
+            id: "vis-001",
+            plateNumber: "WXY 5678",
+            driverName: "Rodrigo Perez",
+            driverIdPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            contact: "0918-111-2233",
+            purpose: "Delivery / Courier (GrabFood)",
+            visitingHost: "Juan Dela Cruz",
+            visitingAddress: "Blk 4 Lot 12, Mahogany St",
+            vehicleType: "Motorcycle",
+            passNumber: "VIS-2026-0041",
+            entryTime: "2026-11-17 07:15:20",
+            status: "CLEARED"
+        }
+    ],
     gateLogs: [
         {
             id: "log-101",
@@ -191,15 +207,15 @@ const SFS_INITIAL_DATA = {
             id: "log-104",
             timestamp: "2026-11-17 08:35:19",
             gate: "Gate 1 - Main North Entrance",
-            plateNumber: "UNKNOWN",
-            ownerName: "Visitor / Unregistered",
-            ownerImage: "",
-            vehicleImage: "",
-            vehicleModel: "Unknown Vehicle",
-            rfidTag: "E280-9999-0000-DEAD",
+            plateNumber: "WXY 5678",
+            ownerName: "Rodrigo Perez (Visitor / Grab)",
+            ownerImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80",
+            vehicleModel: "Honda Beat",
+            rfidTag: "VIS-PASS-2026-0041",
             direction: "ENTRY",
-            status: "DENIED",
-            reason: "Unregistered RFID Tag / Please Visit Guardhouse"
+            status: "VISITOR",
+            reason: "Visitor ID Captured & Cleared for Blk 4 Lot 12"
         }
     ]
 };
