@@ -881,52 +881,104 @@ class SFSHOAApp {
         const select = document.getElementById('simulatorVehicleSelect');
         if (!select) return;
 
-        select.innerHTML = '<option value="">-- Choose a Registered Vehicle to Tap --</option>';
+        select.innerHTML = '';
 
-        this.state.vehicles.forEach(veh => {
-            const hasRfid = veh.rfid && veh.rfid.tagId;
-            const rfidText = hasRfid ? `[${veh.rfid.tagId}]` : '[NO RFID TAG]';
-            const statusText = hasRfid ? `(${veh.rfid.status.toUpperCase()})` : '(PENDING)';
-            
-            const option = document.createElement('option');
-            option.value = veh.id;
-            option.textContent = `${veh.plateNumber} - ${veh.ownerName} - ${veh.make} ${veh.model} ${rfidText} ${statusText}`;
-            select.appendChild(option);
-        });
+        // Default placeholder option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '-- Choose a Vehicle or Scenario to Simulate Approach --';
+        select.appendChild(defaultOption);
+
+        // Group 1: Registered Resident Vehicles
+        const residentGroup = document.createElement('optgroup');
+        residentGroup.label = '── Registered Resident Vehicles ──';
+
+        if (this.state.vehicles.length === 0) {
+            const emptyOpt = document.createElement('option');
+            emptyOpt.value = '';
+            emptyOpt.disabled = true;
+            emptyOpt.textContent = 'No registered vehicles in registry';
+            residentGroup.appendChild(emptyOpt);
+        } else {
+            this.state.vehicles.forEach(veh => {
+                const hasRfid = veh.rfid && veh.rfid.tagId;
+                const statusBadge = hasRfid ? (veh.rfid.status === 'active' ? 'Active' : veh.rfid.status.toUpperCase()) : 'No Tag';
+                const tagSnippet = hasRfid ? `[${veh.rfid.tagId}]` : '[Pending Tag]';
+                
+                const option = document.createElement('option');
+                option.value = veh.id;
+                option.textContent = `${veh.plateNumber} • ${veh.ownerName} (${veh.make} ${veh.model}) - ${tagSnippet} (${statusBadge})`;
+                residentGroup.appendChild(option);
+            });
+        }
+        select.appendChild(residentGroup);
+
+        // Group 2: Special Test Scenarios & Visitors
+        const testGroup = document.createElement('optgroup');
+        testGroup.label = '── Test Scenarios & Visitor Clearance ──';
 
         const guestOption = document.createElement('option');
         guestOption.value = 'test_unregistered';
-        guestOption.textContent = '⚠️ [UNREGISTERED / VISITOR] Unknown Vehicle (E280-9999-0000-DEAD)';
-        select.appendChild(guestOption);
+        guestOption.textContent = '⚠️ Unregistered / Visitor Vehicle (Automatic ID & Plate Capture Pop-up)';
+        testGroup.appendChild(guestOption);
 
         const expiredOption = document.createElement('option');
         expiredOption.value = 'test_expired';
-        expiredOption.textContent = '⛔ [SUSPENDED] Suspended Resident Tag';
-        select.appendChild(expiredOption);
+        expiredOption.textContent = '⛔ Suspended Resident Decal (Access Denied / Alert)';
+        testGroup.appendChild(expiredOption);
+
+        select.appendChild(testGroup);
     }
 
     handleGateVehicleSelect(e) {
-        const val = e.target.value;
+        const val = e && e.target ? e.target.value : '';
         const tagInput = document.getElementById('manualRfidInput');
-        if (!tagInput) return;
 
-        if (val === 'test_unregistered') {
-            tagInput.value = 'E280-9999-0000-DEAD';
+        if (!val) {
+            if (tagInput) tagInput.value = '';
+            this.renderGuardConsoleIdle();
             return;
         }
+
+        if (val === 'test_unregistered') {
+            if (tagInput) tagInput.value = 'E280-9999-0000-DEAD';
+            this.simulateGateTap();
+            return;
+        }
+
         if (val === 'test_expired') {
-            tagInput.value = 'E280-6901-EXPD-9999';
+            if (tagInput) tagInput.value = 'E280-6901-EXPD-9999';
+            this.simulateGateTap();
             return;
         }
 
         const vehicle = this.state.vehicles.find(v => v.id === val);
-        if (vehicle && vehicle.rfid) {
-            tagInput.value = vehicle.rfid.tagId;
+        if (vehicle && vehicle.rfid && vehicle.rfid.tagId) {
+            if (tagInput) tagInput.value = vehicle.rfid.tagId;
+            this.simulateGateTap();
         } else if (vehicle) {
-            tagInput.value = 'NO_TAG_ASSIGNED';
+            if (tagInput) tagInput.value = 'NO_TAG_ASSIGNED';
+            this.simulateGateTap();
         } else {
-            tagInput.value = '';
+            if (tagInput) tagInput.value = '';
         }
+    }
+
+    selectAndSimulateVehicle(val) {
+        const select = document.getElementById('simulatorVehicleSelect');
+        if (select) {
+            select.value = val;
+        }
+        this.handleGateVehicleSelect({ target: { value: val } });
+    }
+
+    handleGateLocationChange(e) {
+        const val = e && e.target ? e.target.value : 'Gate 1 - Main North Entrance';
+        const badge = document.getElementById('guardMonitorLocationBadge');
+        if (badge) {
+            badge.textContent = `GUARD MONITOR #01 • ${val.toUpperCase()}`;
+        }
+        this.showToast(`Active gate switched to: ${val}`, 'info');
     }
 
     simulateGateTap() {
@@ -1115,6 +1167,12 @@ class SFSHOAApp {
     }
 
     renderGuardConsoleIdle() {
+        // Reset dropdown to placeholder so selecting the same vehicle again triggers change event immediately
+        const select = document.getElementById('simulatorVehicleSelect');
+        if (select) {
+            select.value = '';
+        }
+
         const monitorContent = document.getElementById('guardConsoleMonitorContent');
         if (!monitorContent) return;
 
