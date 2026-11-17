@@ -3,7 +3,7 @@
 
 class SFSHOAApp {
     constructor() {
-        this.STORAGE_KEY = 'sfsph1_hoa_data_v3'; // bumped to v3 for visitor & ID capture support
+        this.STORAGE_KEY = 'sfsph1_hoa_data_v4'; // bumped to v4 for streamlined auto-visitor ID capture
         this.state = {
             community: null,
             vehicles: [],
@@ -15,7 +15,7 @@ class SFSHOAApp {
             audioEnabled: true,
             tempOwnerImage: '',
             tempVehicleImage: '',
-            tempDriverIdImage: ''
+            currentAutoVisitor: null
         };
 
         this.audioCtx = null;
@@ -27,7 +27,6 @@ class SFSHOAApp {
         this.initAudio();
         this.initEventListeners();
         this.initImageUploads();
-        this.initVisitorImageUpload();
         this.renderStats();
         this.renderVehiclesTable();
         this.renderGateLogs();
@@ -68,7 +67,7 @@ class SFSHOAApp {
         }));
     }
 
-    // Image Upload Handlers for Registration
+    // Image Upload Handlers for Registration Form
     initImageUploads() {
         const ownerInput = document.getElementById('ownerImageInput');
         const vehicleInput = document.getElementById('vehicleImageInput');
@@ -98,46 +97,6 @@ class SFSHOAApp {
                 reader.readAsDataURL(file);
             });
         }
-    }
-
-    // Driver's Valid ID Upload Handler for Visitor Modal
-    initVisitorImageUpload() {
-        const idInput = document.getElementById('driverIdInput');
-        if (idInput) {
-            idInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    this.state.tempDriverIdImage = event.target.result;
-                    this.updateVisitorIdPreview(event.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-    }
-
-    updateVisitorIdPreview(dataUrl) {
-        const previewEl = document.getElementById('driverIdPreview');
-        const placeholder = document.getElementById('driverIdPlaceholder');
-        if (previewEl && placeholder) {
-            if (dataUrl) {
-                previewEl.src = dataUrl;
-                previewEl.classList.remove('hidden');
-                placeholder.classList.add('hidden');
-            } else {
-                previewEl.src = '';
-                previewEl.classList.add('hidden');
-                placeholder.classList.remove('hidden');
-            }
-        }
-    }
-
-    clearVisitorIdPhoto() {
-        this.state.tempDriverIdImage = '';
-        const idInput = document.getElementById('driverIdInput');
-        if (idInput) idInput.value = '';
-        this.updateVisitorIdPreview('');
     }
 
     updateImagePreview(type, dataUrl) {
@@ -355,20 +314,57 @@ class SFSHOAApp {
     }
 
     // ==========================================
-    // VISITOR REGISTRATION & VALID ID CAPTURE WINDOW
+    // STREAMLINED VISITOR CLEARANCE (CAPTURED PLATE & VALID ID ONLY)
     // ==========================================
     openVisitorModal(detectedPlate = '', reason = '') {
         const modal = document.getElementById('visitorModal');
         if (!modal) return;
 
-        const plateInput = document.getElementById('visitorPlateInput');
-        if (plateInput) {
-            plateInput.value = detectedPlate && detectedPlate !== 'UNKNOWN' && !detectedPlate.includes('UNREGISTERED') ? detectedPlate : '';
-        }
+        // Auto-generate realistic captured plate and driver's valid ID
+        const samplePlates = ['NBD 3841', 'WXY 9214', 'NDX 7789', 'CBA 4910', 'ZAB 8823', 'NBC 6120'];
+        const sampleIds = [
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80'
+        ];
 
-        const alertReasonEl = document.getElementById('visitorModalAlertReason');
-        if (alertReasonEl) {
-            alertReasonEl.textContent = reason || 'Unregistered / Visitor Vehicle at Barrier Gate';
+        const sampleVisitors = [
+            { driver: 'Eduardo Ramos', purpose: 'GrabFood Delivery', destination: 'Blk 4 Lot 12, Mahogany St', type: 'Motorcycle' },
+            { driver: 'Beatriz Gomez', purpose: 'Personal Guest / Family', destination: 'Blk 2 Lot 8, Acacia Ave', type: 'Sedan' },
+            { driver: 'Mario Villanueva', purpose: 'Contractor / Service', destination: 'Blk 7 Lot 25, Narra Blvd', type: 'Van / Truck' },
+            { driver: 'Christian Reyes', purpose: 'Lalamove Courier', destination: 'Blk 1 Lot 3, Palm Dr', type: 'Motorcycle' }
+        ];
+
+        const chosenIndex = Math.floor(Math.random() * sampleVisitors.length);
+        const autoData = sampleVisitors[chosenIndex];
+
+        let finalPlate = detectedPlate && detectedPlate !== 'UNKNOWN' && !detectedPlate.includes('UNREGISTERED') 
+            ? detectedPlate 
+            : samplePlates[Math.floor(Math.random() * samplePlates.length)];
+
+        const finalIdPhoto = sampleIds[chosenIndex % sampleIds.length];
+
+        // Store the auto-assembled visitor object
+        this.state.currentAutoVisitor = {
+            plateNumber: finalPlate,
+            driverIdPhoto: finalIdPhoto,
+            driverName: autoData.driver,
+            purpose: autoData.purpose,
+            destination: autoData.destination,
+            vehicleType: autoData.type
+        };
+
+        // Render ONLY Captured Plate Number and Valid ID in the modal
+        const plateEl = document.getElementById('visitorCapturedPlate');
+        if (plateEl) plateEl.textContent = finalPlate;
+
+        const idImgEl = document.getElementById('visitorCapturedIdImg');
+        if (idImgEl) idImgEl.src = finalIdPhoto;
+
+        const autoInfoEl = document.getElementById('visitorAutoInfoText');
+        if (autoInfoEl) {
+            autoInfoEl.textContent = `Auto-Identified: ${autoData.driver} • ${autoData.purpose} to ${autoData.destination}`;
         }
 
         modal.classList.remove('hidden');
@@ -383,83 +379,55 @@ class SFSHOAApp {
         }
     }
 
-    fillSampleVisitor(type = 'grab') {
-        const form = document.getElementById('visitorForm');
-        if (!form) return;
-
-        if (type === 'grab') {
-            form.visitorPlate.value = 'NBD ' + Math.floor(1000 + Math.random() * 9000);
-            form.visitorDriverName.value = 'Eduardo Ramos (Grab Express)';
-            form.visitorContact.value = '0919-444-1234';
-            form.visitorPurpose.value = 'Delivery / Courier (Grab, Shopee, Lalamove)';
-            form.visitorHost.value = 'Juan Dela Cruz';
-            form.visitorDestination.value = 'Blk 4 Lot 12, Mahogany St';
-            form.visitorVehicleType.value = 'Motorcycle';
-            this.state.tempDriverIdImage = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80';
-        } else if (type === 'contractor') {
-            form.visitorPlate.value = 'CBA ' + Math.floor(1000 + Math.random() * 9000);
-            form.visitorDriverName.value = 'Mario Villanueva (Aircon Technician)';
-            form.visitorContact.value = '0920-333-9876';
-            form.visitorPurpose.value = 'Contractor / Maintenance Service';
-            form.visitorHost.value = 'Engr. Roberto Tan';
-            form.visitorDestination.value = 'Blk 7 Lot 25, Narra Blvd';
-            form.visitorVehicleType.value = 'Van / Pickup';
-            this.state.tempDriverIdImage = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80';
-        } else {
-            form.visitorPlate.value = 'NDX ' + Math.floor(1000 + Math.random() * 9000);
-            form.visitorDriverName.value = 'Beatriz Nicole Gomez (Guest)';
-            form.visitorContact.value = '0927-888-5678';
-            form.visitorPurpose.value = 'Guest / Family Friend Visit';
-            form.visitorHost.value = 'Atty. Maria Santos';
-            form.visitorDestination.value = 'Blk 2 Lot 8, Acacia Ave';
-            form.visitorVehicleType.value = 'Sedan';
-            this.state.tempDriverIdImage = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=500&q=80';
-        }
-
-        this.updateVisitorIdPreview(this.state.tempDriverIdImage);
-        this.showToast('Sample visitor details & Valid ID loaded!', 'info');
-    }
-
-    handleVisitorSubmit(e) {
-        e.preventDefault();
-        const form = e.target;
-
-        const plateNumber = form.visitorPlate.value.trim().toUpperCase();
-        const driverName = form.visitorDriverName.value.trim();
-        const contact = form.visitorContact.value.trim();
-        const purpose = form.visitorPurpose.value;
-        const host = form.visitorHost.value.trim();
-        const destination = form.visitorDestination.value.trim();
-        const vehicleType = form.visitorVehicleType.value;
-        const driverIdPhoto = this.state.tempDriverIdImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+    // Automatic registration and instant barrier gate clearance
+    autoRegisterAndOpenGate() {
+        const visitor = this.state.currentAutoVisitor || {
+            plateNumber: 'NBD 3841',
+            driverIdPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+            driverName: 'Eduardo Ramos',
+            purpose: 'GrabFood Delivery',
+            destination: 'Blk 4 Lot 12, Mahogany St',
+            vehicleType: 'Motorcycle'
+        };
 
         const passCode = `VIS-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
         const now = new Date();
         const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
-        const visitorEntry = {
+        // 1. Save to visitors registry
+        this.state.visitors.unshift({
             id: 'vis-' + Date.now(),
-            plateNumber,
-            driverName,
-            driverIdPhoto,
-            contact,
-            purpose,
-            visitingHost: host,
-            visitingAddress: destination,
-            vehicleType,
+            plateNumber: visitor.plateNumber,
+            driverName: visitor.driverName,
+            driverIdPhoto: visitor.driverIdPhoto,
+            purpose: visitor.purpose,
+            visitingAddress: visitor.destination,
+            vehicleType: visitor.vehicleType,
             passNumber: passCode,
             entryTime: timestamp,
             status: 'CLEARED'
-        };
+        });
 
-        this.state.visitors.unshift(visitorEntry);
+        // 2. Add to gate access logs
+        this.addGateLog({
+            id: 'log-' + Date.now(),
+            timestamp: timestamp,
+            gate: 'Gate 1 - Main North Entrance',
+            plateNumber: visitor.plateNumber,
+            ownerName: `${visitor.driverName} (Visitor)`,
+            ownerImage: visitor.driverIdPhoto,
+            vehicleImage: '',
+            vehicleModel: `${visitor.vehicleType} (${visitor.purpose})`,
+            rfidTag: passCode,
+            direction: 'ENTRY',
+            status: 'VISITOR',
+            reason: `Driver ID Captured. Destination: ${visitor.destination}`
+        });
 
-        // Close the pop-up modal
+        // Close the pop-up window
         this.closeVisitorModal();
-        form.reset();
-        this.clearVisitorIdPhoto();
 
-        // Trigger barrier gate opening!
+        // 3. Play chime & open barrier arm
         this.playBeep('granted');
 
         const gateArm = document.getElementById('simulatorGateArm');
@@ -475,7 +443,7 @@ class SFSHOAApp {
             gateArm.classList.add('is-open');
         }
 
-        // Update Guard Monitor Screen with Captured Valid ID & Plate
+        // 4. Update Guard Monitor Screen showing Plate and Valid ID ONLY
         if (monitorContent) {
             monitorContent.innerHTML = `
                 <div class="animate-fadeIn p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/80 shadow-2xl relative overflow-hidden">
@@ -483,67 +451,51 @@ class SFSHOAApp {
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-amber-500/30">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
-                            <span class="text-xs font-black tracking-widest text-amber-400 uppercase font-mono">VISITOR CLEARED • PASS ISSUED: ${passCode}</span>
+                            <span class="text-xs font-black tracking-widest text-amber-400 uppercase font-mono">AUTOMATIC VISITOR REGISTRATION • PASS: ${passCode}</span>
                         </div>
                         <span class="px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-950 tracking-wide uppercase shadow-sm flex items-center gap-1.5">
                             <i class="fa-solid fa-address-card"></i> VISITOR CLEARED
                         </span>
                     </div>
 
+                    <!-- SHOW CAPTURED PLATE NUMBER & VALID ID ONLY -->
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                         
-                        <!-- Driver's Captured Valid ID & Plate Badge (Left 7 cols) -->
-                        <div class="sm:col-span-7 space-y-2.5">
-                            
-                            <!-- Captured ID Image Display -->
-                            <div class="relative rounded-xl overflow-hidden border-2 border-amber-400/80 bg-slate-900 aspect-video shadow-md">
-                                <img src="${driverIdPhoto}" alt="Driver Valid ID" class="w-full h-full object-cover">
-                                <div class="absolute bottom-2 left-2 bg-slate-950/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-amber-500/50 text-[11px] text-amber-300 font-bold flex items-center gap-1.5">
-                                    <i class="fa-solid fa-shield-halved"></i> VALID DRIVER ID CAPTURED
+                        <!-- Driver's Captured Valid ID Card (7 cols) -->
+                        <div class="sm:col-span-7 space-y-2">
+                            <div class="relative rounded-2xl overflow-hidden border-2 border-amber-400/90 bg-slate-900 aspect-video shadow-xl">
+                                <img src="${visitor.driverIdPhoto}" alt="Driver Valid ID" class="w-full h-full object-cover">
+                                
+                                <div class="absolute bottom-2 left-2 bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-amber-500/50 text-xs text-amber-300 font-black flex items-center gap-2">
+                                    <i class="fa-solid fa-shield-halved text-amber-400"></i>
+                                    <span>VALID DRIVER ID CAPTURED</span>
                                 </div>
-                                <div class="absolute top-2 right-2 bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded shadow uppercase">
-                                    ${purpose.split(' ')[0]}
+                                
+                                <div class="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow uppercase">
+                                    VERIFIED
                                 </div>
-                            </div>
-
-                            <!-- PROMINENT VISITOR VEHICLE PLATE -->
-                            <div class="bg-white rounded-xl p-3 border-2 border-amber-500 flex items-center justify-between shadow-lg">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-7 h-7 rounded bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold">
-                                        <i class="fa-solid fa-user-clock"></i>
-                                    </div>
-                                    <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">VISITOR PLATE</div>
-                                </div>
-                                <div class="text-2xl sm:text-3xl font-black font-mono tracking-widest text-slate-950">
-                                    ${plateNumber}
-                                </div>
-                                <span class="text-[10px] font-mono text-amber-800 font-bold bg-amber-100 px-2 py-1 rounded border border-amber-300">
-                                    ${passCode}
-                                </span>
                             </div>
                         </div>
 
-                        <!-- Visitor Driver & Destination Info (Right 5 cols) -->
-                        <div class="sm:col-span-5 bg-slate-900/90 rounded-xl p-3.5 border border-slate-800 space-y-3">
-                            <div>
-                                <div class="text-sm font-bold text-white truncate">${driverName}</div>
-                                <div class="text-xs text-amber-400 font-semibold mt-0.5">${purpose}</div>
-                                <div class="text-[11px] text-slate-400 truncate mt-0.5"><i class="fa-solid fa-phone mr-1"></i>${contact || 'No contact provided'}</div>
+                        <!-- Captured Plate Number (5 cols) -->
+                        <div class="sm:col-span-5 space-y-3">
+                            <div class="bg-white rounded-2xl p-4 border-2 border-slate-900 shadow-xl text-center">
+                                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-tree-city text-slate-800"></i>
+                                    <span>CAPTURED VISITOR PLATE</span>
+                                </div>
+                                <div class="text-3xl font-black font-mono tracking-widest text-slate-950">
+                                    ${visitor.plateNumber}
+                                </div>
+                                <div class="mt-2 text-[10px] font-mono text-amber-900 font-bold bg-amber-100 py-1 px-2 rounded-lg border border-amber-300">
+                                    ${passCode}
+                                </div>
                             </div>
 
-                            <div class="pt-2 border-t border-slate-800 space-y-1.5 text-xs">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-slate-400">Visiting Host:</span>
-                                    <span class="font-bold text-slate-200">${host || 'SFSPh1 Resident'}</span>
-                                </div>
-                                <div class="flex items-center justify-between text-[11px]">
-                                    <span class="text-slate-500">Destination:</span>
-                                    <span class="text-amber-300 font-semibold">${destination}</span>
-                                </div>
-                                <div class="flex items-center justify-between text-[10px] font-mono pt-1 text-slate-500">
-                                    <span>Cleared At:</span>
-                                    <span class="text-slate-300">${timestamp.split(' ')[1]}</span>
-                                </div>
+                            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
+                                <div class="font-bold text-white">${visitor.driverName}</div>
+                                <div class="text-[11px] text-amber-300">${visitor.purpose}</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Dest: ${visitor.destination}</div>
                             </div>
                         </div>
 
@@ -558,29 +510,13 @@ class SFSHOAApp {
             `;
         }
 
-        // Add to Gate Access Log
-        this.addGateLog({
-            id: 'log-' + Date.now(),
-            timestamp: timestamp,
-            gate: 'Gate 1 - Main North Entrance',
-            plateNumber: plateNumber,
-            ownerName: `${driverName} (Visitor)`,
-            ownerImage: driverIdPhoto,
-            vehicleImage: '',
-            vehicleModel: `${vehicleType} (${purpose})`,
-            rfidTag: passCode,
-            direction: 'ENTRY',
-            status: 'VISITOR',
-            reason: `Driver ID Captured. Destination: ${destination}`
-        });
-
-        this.showToast(`Visitor ${plateNumber} registered and Barrier Gate Opened!`, 'success');
+        this.showToast(`Visitor ${visitor.plateNumber} auto-registered & Barrier Gate Opened!`, 'success');
 
         if (window.confetti) {
-            window.confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 } });
+            window.confetti({ particleCount: 35, spread: 45, origin: { y: 0.8 } });
         }
 
-        // Reset barrier after 5.5 seconds
+        // Auto-close barrier after 5.5s
         setTimeout(() => {
             if (gateArm) gateArm.classList.remove('is-open');
             if (ledIndicator) {
@@ -718,7 +654,6 @@ class SFSHOAApp {
             select.appendChild(option);
         });
 
-        // Special test options
         const guestOption = document.createElement('option');
         guestOption.value = 'test_unregistered';
         guestOption.textContent = '⚠️ [UNREGISTERED / VISITOR] Unknown Vehicle (E280-9999-0000-DEAD)';
@@ -768,7 +703,6 @@ class SFSHOAApp {
             return;
         }
 
-        // Play scanner blip
         this.playBeep('scan');
 
         const sensor = document.getElementById('gateRfidSensor');
@@ -779,7 +713,6 @@ class SFSHOAApp {
             }, 600);
         }
 
-        // Find matching vehicle
         const matchedVehicle = this.state.vehicles.find(v => v.rfid && v.rfid.tagId.toLowerCase() === scannedTag.toLowerCase());
 
         const gateArm = document.getElementById('simulatorGateArm');
@@ -790,7 +723,7 @@ class SFSHOAApp {
         const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 
         if (matchedVehicle && matchedVehicle.rfid.status === 'active') {
-            // ACCESS GRANTED FOR REGISTERED RESIDENT
+            // REGISTERED RESIDENT ACCESS
             this.playBeep('granted');
 
             if (ledIndicator) {
@@ -917,7 +850,7 @@ class SFSHOAApp {
             }, 5000);
 
         } else {
-            // UNREGISTERED OR VISITOR VEHICLE DETECTED
+            // UNREGISTERED OR VISITOR DETECTED: AUTO POP-UP SHOWING CAPTURED PLATE & VALID ID ONLY!
             this.playBeep('denied');
 
             if (ledIndicator) {
@@ -925,84 +858,12 @@ class SFSHOAApp {
                 ledIndicator.classList.add('red');
             }
 
-            let reason = 'Unregistered / Visitor Vehicle';
-            let ownerName = 'Visitor / Unregistered Driver';
-            let plate = scannedTag.includes('DEAD') ? 'VISITOR CAR' : 'UNKNOWN';
-            let model = 'Unregistered Vehicle';
+            let plate = scannedTag.includes('DEAD') ? '' : 'UNKNOWN';
 
-            if (matchedVehicle && matchedVehicle.rfid.status !== 'active') {
-                reason = `RFID Tag is ${matchedVehicle.rfid.status.toUpperCase()}`;
-                ownerName = matchedVehicle.ownerName;
-                plate = matchedVehicle.plateNumber;
-                model = `${matchedVehicle.make} ${matchedVehicle.model}`;
-            }
-
-            if (monitorContent) {
-                monitorContent.innerHTML = `
-                    <div class="animate-fadeIn p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-red-500/80 shadow-2xl relative overflow-hidden">
-                        
-                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-red-500/30">
-                            <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                                <span class="text-xs font-black tracking-widest text-red-400 uppercase font-mono">UNREGISTERED / VISITOR VEHICLE DETECTED</span>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-black bg-red-600 text-white tracking-wide uppercase shadow-sm">
-                                <i class="fa-solid fa-triangle-exclamation mr-1"></i> BARRIER LOCKED
-                            </span>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                            
-                            <div class="sm:col-span-7 space-y-2.5">
-                                <div class="relative rounded-xl overflow-hidden border border-red-900/60 bg-slate-900 aspect-video flex items-center justify-center">
-                                    <div class="text-center p-4">
-                                        <i class="fa-solid fa-id-card-clip text-4xl text-amber-400 mb-2"></i>
-                                        <p class="text-xs font-bold text-slate-100">Driver Valid ID Required For Entry</p>
-                                        <p class="text-[10px] text-slate-400">Tag: ${scannedTag}</p>
-                                    </div>
-                                </div>
-
-                                <div class="bg-red-950/60 rounded-xl p-3 border-2 border-red-600/60 flex items-center justify-between shadow-lg">
-                                    <div class="text-[10px] font-bold text-red-300 uppercase tracking-wider">DETECTED PLATE</div>
-                                    <div class="text-2xl font-black font-mono tracking-widest text-white">
-                                        ${plate}
-                                    </div>
-                                    <span class="text-[10px] font-mono text-red-200 font-bold bg-red-900 px-2 py-1 rounded">
-                                        REQUIRES ID
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="sm:col-span-5 bg-slate-900/90 rounded-xl p-3.5 border border-slate-800 space-y-3">
-                                <div>
-                                    <div class="text-xs font-bold text-amber-400 uppercase">Guard Protocol:</div>
-                                    <div class="text-xs text-slate-200 font-semibold mt-0.5">${reason}</div>
-                                    <p class="text-[11px] text-slate-400 leading-relaxed mt-1">
-                                        Capture driver's Government/Driver's ID, record plate number, and verify destination inside Phase 1.
-                                    </p>
-                                </div>
-
-                                <button onclick="app.openVisitorModal('${plate === 'UNKNOWN' ? '' : plate}', '${reason}')" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all">
-                                    <i class="fa-solid fa-camera"></i>
-                                    <span>Capture Driver ID & Issue Pass</span>
-                                </button>
-                            </div>
-
-                        </div>
-
-                        <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
-                            <span class="text-amber-400">Visitor window opened automatically</span>
-                            <span class="font-mono">${gateName}</span>
-                        </div>
-
-                    </div>
-                `;
-            }
-
-            // AUTO POP-UP THE VISITOR ID WINDOW!
+            // Open the streamlined pop-up window showing captured plate and valid ID only!
             setTimeout(() => {
-                this.openVisitorModal(plate === 'UNKNOWN' || plate.includes('VISITOR') ? '' : plate, reason);
-            }, 750);
+                this.openVisitorModal(plate, 'Unregistered Vehicle Detected at Gate');
+            }, 400);
         }
     }
 
@@ -1544,12 +1405,6 @@ class SFSHOAApp {
         const regForm = document.getElementById('vehicleRegistrationForm');
         if (regForm) {
             regForm.addEventListener('submit', (e) => this.handleRegistrationSubmit(e));
-        }
-
-        // Visitor Form
-        const visForm = document.getElementById('visitorForm');
-        if (visForm) {
-            visForm.addEventListener('submit', (e) => this.handleVisitorSubmit(e));
         }
 
         // Search Input

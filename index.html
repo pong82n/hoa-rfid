@@ -106,7 +106,7 @@
 
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-2.5">
-                    <button onclick="app.openVisitorModal('', 'Manual Guard Entry')" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 font-bold text-xs shadow-sm transition-all">
+                    <button onclick="app.openVisitorModal('', 'Manual Gate Trigger')" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 font-bold text-xs shadow-sm transition-all">
                         <i class="fa-solid fa-id-card text-amber-600"></i>
                         <span>Visitor ID Window</span>
                     </button>
@@ -142,24 +142,24 @@
                         </div>
 
                         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                            Smart <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-emerald-400">RFID Access, Photos & Visitor Clearance</span> for SFS Phase 1
+                            Smart <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-emerald-400">RFID Access, Photos & Auto Visitor ID</span> for SFS Phase 1
                         </h1>
 
                         <p class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
-                            Fast contactless barrier gate clearance with real-time visual verification. Unregistered and visitor vehicles trigger an instant guardhouse pop-up window to capture the driver's valid ID, record plate numbers, and issue clearance passes.
+                            Fast contactless barrier gate clearance with real-time visual verification. Unregistered vehicles trigger an instant pop-up displaying the <b>captured plate number</b> and <b>driver's valid ID</b> with automatic registration.
                         </p>
 
                         <!-- Key Pillars Grid -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                             <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 backdrop-blur-sm">
+                                <div class="text-amber-400 mb-1.5"><i class="fa-solid fa-id-card text-xl"></i></div>
+                                <h3 class="font-bold text-sm text-slate-100">Auto Visitor ID</h3>
+                                <p class="text-xs text-slate-400">Captured plate & valid ID clearance</p>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 backdrop-blur-sm">
                                 <div class="text-sky-400 mb-1.5"><i class="fa-solid fa-camera-retro text-xl"></i></div>
                                 <h3 class="font-bold text-sm text-slate-100">Photo Matching</h3>
                                 <p class="text-xs text-slate-400">Owner & vehicle image verification</p>
-                            </div>
-                            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 backdrop-blur-sm">
-                                <div class="text-amber-400 mb-1.5"><i class="fa-solid fa-id-card text-xl"></i></div>
-                                <h3 class="font-bold text-sm text-slate-100">Visitor ID Capture</h3>
-                                <p class="text-xs text-slate-400">Pop-up window for guest clearance</p>
                             </div>
                             <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3.5 backdrop-blur-sm col-span-2 sm:col-span-1">
                                 <div class="text-emerald-400 mb-1.5"><i class="fa-solid fa-microchip text-xl"></i></div>
@@ -753,7 +753,7 @@
                         <button type="button" onclick="app.openVisitorModal('', 'Manual Guard Check')" class="w-full py-3 px-4 rounded-xl border border-amber-500/60 bg-gradient-to-r from-amber-950/60 to-amber-900/60 hover:from-amber-900/80 hover:to-amber-800/80 text-amber-300 font-bold text-xs flex items-center justify-between shadow-md transition-all">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-id-card text-amber-400 text-base"></i>
-                                <span>Manual Visitor Clearance Window</span>
+                                <span>Visitor Clearance Window (Captured Plate & ID)</span>
                             </div>
                             <span class="px-2 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[10px]">
                                 POP-UP
@@ -821,10 +821,10 @@
 
                         <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-700/80 text-xs text-slate-300 space-y-1">
                             <div class="font-bold text-amber-300 flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-question"></i> How Visitor Pop-up Works:
+                                <i class="fa-solid fa-bolt"></i> Automatic Visitor ID Clearance:
                             </div>
                             <p class="text-[11px] text-slate-400">
-                                If a driver with an unknown or unregistered RFID arrives, the <b>Visitor Registration Window pops up automatically</b> to capture their valid ID and plate number before lifting the gate.
+                                Unregistered vehicles immediately trigger the pop-up showing their <b>captured plate number and valid ID</b> with instant 1-click barrier clearance!
                             </p>
                         </div>
                     </div>
@@ -1036,7 +1036,7 @@
             <div class="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500">
                 <p>© 2026 SFSPh1 Homeowners Association. All rights reserved.</p>
                 <div class="flex items-center gap-4">
-                    <span>RFID Security Version 2.6</span>
+                    <span>RFID Security Version 2.7</span>
                     <span>•</span>
                     <a href="#overview" class="hover:text-slate-300">Back to Top ↑</a>
                 </div>
@@ -1045,169 +1045,114 @@
     </footer>
 
     <!-- ============================================================
-         MODAL: VISITOR CLEARANCE & DRIVER VALID ID CAPTURE WINDOW
+         MODAL: STREAMLINED VISITOR CLEARANCE (CAPTURED PLATE & VALID ID ONLY)
          ============================================================ -->
     <div id="visitorModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border-2 border-amber-400 relative overflow-hidden animate-fadeIn">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border-2 border-amber-400 relative overflow-hidden animate-fadeIn">
             
             <button onclick="app.closeVisitorModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
             <!-- Window Header -->
-            <div class="mb-4 pb-3 border-b border-slate-100 flex items-start gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl shrink-0 shadow-md shadow-amber-500/20">
-                    <i class="fa-solid fa-id-card"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
-                            GUARDHOUSE CLEARANCE
-                        </span>
-                        <span id="visitorModalAlertReason" class="text-xs text-red-600 font-bold truncate max-w-[200px]">Unregistered Vehicle</span>
+            <div class="mb-5 pb-3 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-lg shrink-0 shadow-md shadow-amber-500/20 font-bold">
+                        <i class="fa-solid fa-id-card"></i>
                     </div>
-                    <h3 class="text-xl font-black text-slate-900 mt-0.5">Visitor Clearance & Driver ID Capture</h3>
-                    <p class="text-xs text-slate-500">Capture driver's Government/Driver's ID & plate number to issue a visitor barrier pass.</p>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
+                                AUTOMATIC VISITOR CLEARANCE
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 mt-0.5">Visitor Clearance & Driver ID Capture</h3>
+                    </div>
                 </div>
             </div>
 
-            <!-- Fast Presets for Guard Testing -->
-            <div class="flex flex-wrap items-center justify-between gap-2 p-3 bg-amber-50/80 rounded-xl border border-amber-200 mb-5 text-xs">
-                <span class="font-bold text-amber-950 flex items-center gap-1">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-600"></i> Fast Presets:
-                </span>
-                <div class="flex flex-wrap gap-1.5">
-                    <button type="button" onclick="app.fillSampleVisitor('grab')" class="px-2.5 py-1 bg-white border border-amber-300 hover:bg-amber-100 rounded-lg font-semibold text-slate-800 transition-colors shadow-sm">
-                        <i class="fa-solid fa-motorcycle text-emerald-600 mr-1"></i> GrabFood Delivery
-                    </button>
-                    <button type="button" onclick="app.fillSampleVisitor('guest')" class="px-2.5 py-1 bg-white border border-amber-300 hover:bg-amber-100 rounded-lg font-semibold text-slate-800 transition-colors shadow-sm">
-                        <i class="fa-solid fa-user-group text-blue-600 mr-1"></i> Weekend Guest
-                    </button>
-                    <button type="button" onclick="app.fillSampleVisitor('contractor')" class="px-2.5 py-1 bg-white border border-amber-300 hover:bg-amber-100 rounded-lg font-semibold text-slate-800 transition-colors shadow-sm">
-                        <i class="fa-solid fa-wrench text-amber-600 mr-1"></i> Aircon Contractor
-                    </button>
-                </div>
-            </div>
-
-            <!-- Visitor Form -->
-            <form id="visitorForm" class="space-y-4">
+            <!-- STREAMLINED VISUAL DISPLAY: CAPTURED PLATE & VALID ID ONLY -->
+            <div class="space-y-4">
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    
-                    <!-- Plate Number -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" for="visitorPlate">
-                            Vehicle Plate Number <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="visitorPlateInput" name="visitorPlate" required placeholder="e.g. NBD 3841" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-mono font-bold uppercase">
+                <!-- 1. CAPTURED VEHICLE PLATE NUMBER BADGE -->
+                <div>
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-camera text-sky-600"></i> CAPTURED VEHICLE PLATE NUMBER
+                        </span>
+                        <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            OCR RECOGNIZED
+                        </span>
                     </div>
 
-                    <!-- Vehicle Type -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" for="visitorVehicleType">
-                            Vehicle Classification <span class="text-red-500">*</span>
-                        </label>
-                        <select id="visitorVehicleType" name="visitorVehicleType" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium bg-white">
-                            <option value="Motorcycle">Motorcycle / Scooter</option>
-                            <option value="Sedan">Sedan / Hatchback</option>
-                            <option value="SUV">SUV / Crossover</option>
-                            <option value="Van / Pickup">Van / Delivery Truck</option>
-                        </select>
-                    </div>
-
-                    <!-- Driver Name -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" for="visitorDriverName">
-                            Driver Full Name <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="visitorDriverName" name="visitorDriverName" required placeholder="e.g. Eduardo Ramos" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium">
-                    </div>
-
-                    <!-- Contact -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" for="visitorContact">
-                            Driver Contact Number
-                        </label>
-                        <input type="text" id="visitorContact" name="visitorContact" placeholder="0919-000-0000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium">
-                    </div>
-
-                </div>
-
-                <!-- DRIVER'S VALID ID CAPTURE / UPLOAD BOX -->
-                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="text-xs font-bold text-slate-800 uppercase flex items-center gap-1.5">
-                            <i class="fa-solid fa-address-card text-amber-600"></i> Driver's Valid ID (License / PhilSys / Gov ID) <span class="text-red-500">*</span>
-                        </label>
-                        <span class="text-[10px] text-slate-400">Captured at Guardhouse</span>
-                    </div>
-
-                    <div class="relative image-dropzone rounded-xl bg-white p-3 flex flex-col items-center justify-center text-center cursor-pointer min-h-[120px]">
-                        <input type="file" id="driverIdInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
-                        
-                        <div id="driverIdPlaceholder" class="flex flex-col items-center">
-                            <i class="fa-solid fa-camera text-3xl text-amber-500/70 mb-1"></i>
-                            <span class="text-xs font-bold text-slate-700">Click to Snap / Upload Driver's ID Photo</span>
-                            <span class="text-[10px] text-slate-400">Driver's License, PRC, Passport, PhilSys (JPG/PNG)</span>
+                    <div class="bg-slate-900 p-4 rounded-2xl border-2 border-slate-900 shadow-md flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-sm font-bold shrink-0">
+                                <i class="fa-solid fa-tree-city"></i>
+                            </div>
+                            <div>
+                                <div class="text-[9px] font-mono text-slate-400 uppercase">SFSPh1 ACCESS CONTROL</div>
+                                <div id="visitorCapturedPlate" class="text-3xl font-black font-mono tracking-widest text-white">
+                                    NBD 3841
+                                </div>
+                            </div>
                         </div>
 
-                        <img id="driverIdPreview" class="hidden w-48 h-28 rounded-lg object-cover border-2 border-amber-500 shadow-md">
-                    </div>
-
-                    <div class="flex items-center justify-between mt-1.5">
-                        <span class="text-[10px] text-slate-500">Photo will be saved to visitor access audit log</span>
-                        <button type="button" onclick="app.clearVisitorIdPhoto()" class="text-[10px] text-red-500 hover:text-red-700 font-semibold">
-                            Remove ID Photo
-                        </button>
+                        <div class="text-right">
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-extrabold bg-amber-500 text-slate-950 uppercase tracking-wider">
+                                VISITOR
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    
-                    <!-- Purpose of Visit -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" for="visitorPurpose">
-                            Purpose of Visit <span class="text-red-500">*</span>
-                        </label>
-                        <select id="visitorPurpose" name="visitorPurpose" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium bg-white">
-                            <option value="Delivery / Courier (Grab, Shopee, Lalamove)">Delivery / Courier (Grab, Shopee, Lalamove)</option>
-                            <option value="Guest / Family Friend Visit">Guest / Family Friend Visit</option>
-                            <option value="Contractor / Maintenance Service">Contractor / Maintenance Service</option>
-                            <option value="Real Estate / Property Viewing">Real Estate / Property Viewing</option>
-                            <option value="Utility / Government Inspection">Utility / Government Inspection</option>
-                        </select>
-                    </div>
-
-                    <!-- Destination in SFSPh1 -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" for="visitorDestination">
-                            Destination (Block & Lot) <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="visitorDestination" name="visitorDestination" required placeholder="e.g. Blk 4 Lot 12, Mahogany St" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium">
-                    </div>
-
-                </div>
-
-                <!-- Host Homeowner Name -->
+                <!-- 2. DRIVER'S CAPTURED VALID ID (LICENSE / GOV ID PHOTO) -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" for="visitorHost">
-                        Host Homeowner / Resident Contact Person
-                    </label>
-                    <input type="text" id="visitorHost" name="visitorHost" placeholder="e.g. Juan Dela Cruz" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-id-card-clip text-amber-600"></i> DRIVER'S VALID ID (CAPTURED)
+                        </span>
+                        <span class="text-[10px] text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            VERIFIED ID
+                        </span>
+                    </div>
+
+                    <div class="relative rounded-2xl overflow-hidden border-2 border-amber-400 bg-slate-950 aspect-video shadow-lg group">
+                        <img id="visitorCapturedIdImg" class="w-full h-full object-cover" alt="Driver Valid ID" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80">
+                        
+                        <!-- ID Verification Hologram Badge -->
+                        <div class="absolute bottom-2.5 left-2.5 bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-amber-400/50 text-xs text-amber-300 font-black flex items-center gap-1.5 shadow-md">
+                            <i class="fa-solid fa-shield-halved text-amber-400"></i>
+                            <span>VALID GOVERNMENT / DRIVER ID</span>
+                        </div>
+
+                        <div class="absolute top-2.5 right-2.5 bg-emerald-500 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-md shadow uppercase tracking-wide">
+                            CLEARANCE READY
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Modal Actions -->
-                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="app.closeVisitorModal()" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition-colors">
-                        Cancel / Deny Entry
+                <!-- Auto-Fill Data Summary Badge -->
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-950 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-base shrink-0"></i>
+                    <div id="visitorAutoInfoText" class="font-medium text-[11px] truncate flex-1">
+                        Auto-Identified: Eduardo Ramos • GrabFood Delivery to Blk 4 Lot 12, Mahogany St
+                    </div>
+                </div>
+
+                <!-- SINGLE ACTION BUTTON TO REGISTER & OPEN GATE AUTOMATICALLY -->
+                <div class="pt-2 flex items-center gap-3">
+                    <button type="button" onclick="app.closeVisitorModal()" class="w-1/3 py-3 rounded-xl border border-slate-300 text-slate-600 font-bold text-xs hover:bg-slate-100 transition-colors">
+                        Cancel
                     </button>
-                    <button type="submit" class="px-7 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-2 transition-all">
-                        <i class="fa-solid fa-road-barrier"></i>
-                        <span>Issue Visitor Pass & Open Gate</span>
+                    
+                    <button type="button" onclick="app.autoRegisterAndOpenGate()" class="w-2/3 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition-all transform active:scale-95">
+                        <i class="fa-solid fa-road-barrier text-base"></i>
+                        <span>Register Visitor & Open Gate</span>
                     </button>
                 </div>
 
-            </form>
+            </div>
 
         </div>
     </div>

@@ -1,6 +1,6 @@
 # SFSPh1 Homeowners Association - Vehicle Registration & RFID Management Portal
 
-A modern, responsive web application for **San Francisco South Phase 1 (SFSPh1) Homeowners Association**. It provides contactless vehicle registration, QR code access for mobile homeowners, automated Radio Frequency Identification (RFID) credential generation, a realistic printable windshield decal studio, real-time photo verification, and an interactive guardhouse barrier gate simulator with automated visitor driver ID capture.
+A modern, responsive web application for **San Francisco South Phase 1 (SFSPh1) Homeowners Association**. It provides contactless vehicle registration, QR code access for mobile homeowners, automated Radio Frequency Identification (RFID) credential generation, a realistic printable windshield decal studio, real-time photo verification, and an interactive guardhouse barrier gate simulator with streamlined visitor plate & driver ID capture.
 
 ---
 
@@ -16,11 +16,10 @@ A modern, responsive web application for **San Francisco South Phase 1 (SFSPh1) 
 - **Vehicle Image Upload**: Captures front/side vehicle photos showing make, model, and body color.
 - **Fast Demo Autofill**: Single-click demo presets populate realistic sample photos for testing.
 
-### 3. 🚨 Unregistered Vehicle & Visitor ID Capture Pop-up
-- **Automatic Pop-up Window**: When an unregistered vehicle, delivery courier (Grab, Shopee, Lalamove), contractor, or guest arrives at the gate sensor, the **Visitor Clearance Window** pops up automatically.
-- **Driver Valid ID Capture**: Securely snaps or uploads a photo of the driver's Government ID (Driver's License, PhilSys, UMID, PRC).
-- **Plate Number & Destination Recording**: Records the visitor's vehicle plate number, visiting host resident, and destination address (Block & Lot).
-- **Instant Barrier Gate Clearance**: Generating the temporary visitor pass automatically lifts the barrier gate, plays the chime, and updates the guard monitor.
+### 3. 🚨 Streamlined Visitor Clearance (Captured Plate & Valid ID Only)
+- **Automatic Pop-up Window**: When an unregistered vehicle or guest approaches the gate, the **Visitor Clearance Window** pops up showing **Captured Plate Number** and **Driver's Valid ID Card** only.
+- **Auto-Fill Data & Automatic Registration**: The system automatically recognizes the plate, matches the driver's verified ID card, auto-fills visit details, and registers the visitor with a single click.
+- **Instant Barrier Gate Clearance**: Clicking **"Register Visitor & Open Gate"** instantly authorizes entry, lifts the barrier boom arm, plays the chime, and displays the captured plate and valid ID on the guard monitor.
 
 ### 4. 🏷️ Automated RFID Generation (Radio Frequency Identification)
 - **EPC Gen2 UHF Standard**: Generates unique 96-bit hexadecimal tag IDs (e.g., `E280-6901-44B2-9A01`).
@@ -41,6 +40,7 @@ A modern, responsive web application for **San Francisco South Phase 1 (SFSPh1) 
 ### 6. 🚧 Smart Barrier Gate & Guard Console Simulator
 - **Live Monitor HUD**:
   - Displays high-contrast **Vehicle Plate Number**, **Vehicle Photo**, and **Owner Portrait**.
+  - For visitors: displays the **Captured Visitor Plate** and verified **Driver's Valid ID Card**.
   - Dual-tone harmonic audio chime synthesizer (built with Web Audio API).
   - Smooth motorized 3D barrier boom arm animation.
   - Real-time timestamped audit log of all resident and visitor entries.
