@@ -1,0 +1,187 @@
+// SFSPh1 Homeowners Association - Initial Data Store
+const SFS_INITIAL_DATA = {
+    community: {
+        name: "SFSPh1 Homeowners Association",
+        acronym: "SFSPh1 HOA",
+        tagline: "Secure, Connected & Progressive Gated Community",
+        subdivision: "San Francisco South Phase 1",
+        address: "Phase 1 Clubhouse, South Blvd, SFS Subdivision",
+        contactNumber: "+63 (02) 8876-5432 / +63 917 123 4567",
+        email: "admin@sfsph1-hoa.ph",
+        facilityCode: "084", // Wiegand Facility Code for SFSPh1
+        currentYear: 2026
+    },
+    vehicles: [
+        {
+            id: "veh-001",
+            ownerName: "Juan Dela Cruz",
+            ownerType: "Homeowner",
+            contact: "0917-555-0101",
+            email: "juan.delacruz@email.ph",
+            blockLot: "Blk 4 Lot 12",
+            street: "Mahogany Street",
+            vehicleType: "SUV",
+            plateNumber: "NAK 4821",
+            make: "Toyota",
+            model: "Fortuner GR-S",
+            year: "2024",
+            color: "Attitude Black",
+            rfid: {
+                tagId: "E280-6901-44B2-9A01",
+                wiegandCode: "FC:084-ID:10492",
+                serialNumber: "SFS1-UHF-2026-00104",
+                frequency: "865-928 MHz (UHF Gen2)",
+                issueDate: "2026-01-15",
+                expiryDate: "2027-01-15",
+                status: "active", // active, suspended, expired, pending
+                tagType: "Windshield Decal (Anti-Tamper)"
+            },
+            registeredAt: "2026-01-15T09:30:00"
+        },
+        {
+            id: "veh-002",
+            ownerName: "Atty. Maria Santos",
+            ownerType: "Homeowner",
+            contact: "0918-555-0202",
+            email: "maria.santos@lawcorp.ph",
+            blockLot: "Blk 2 Lot 8",
+            street: "Acacia Avenue",
+            vehicleType: "Sedan",
+            plateNumber: "DAB 9210",
+            make: "Honda",
+            model: "Civic RS Turbo",
+            year: "2023",
+            color: "Platinum White Pearl",
+            rfid: {
+                tagId: "E280-6901-57C3-8B14",
+                wiegandCode: "FC:084-ID:10493",
+                serialNumber: "SFS1-UHF-2026-00105",
+                frequency: "865-928 MHz (UHF Gen2)",
+                issueDate: "2026-01-20",
+                expiryDate: "2027-01-20",
+                status: "active",
+                tagType: "Windshield Decal (Anti-Tamper)"
+            },
+            registeredAt: "2026-01-20T14:15:00"
+        },
+        {
+            id: "veh-003",
+            ownerName: "Engr. Roberto Tan",
+            ownerType: "Homeowner",
+            contact: "0920-555-0303",
+            email: "robert.tan@buildcon.ph",
+            blockLot: "Blk 7 Lot 25",
+            street: "Narra Boulevard",
+            vehicleType: "Pickup Truck",
+            plateNumber: "CBC 7781",
+            make: "Ford",
+            model: "Ranger Raptor 3.0 V6",
+            year: "2024",
+            color: "Code Orange",
+            rfid: {
+                tagId: "E280-6901-72D9-1E32",
+                wiegandCode: "FC:084-ID:10494",
+                serialNumber: "SFS1-UHF-2026-00106",
+                frequency: "865-928 MHz (UHF Gen2)",
+                issueDate: "2026-02-01",
+                expiryDate: "2027-02-01",
+                status: "active",
+                tagType: "Windshield Decal (Anti-Tamper)"
+            },
+            registeredAt: "2026-02-01T11:00:00"
+        },
+        {
+            id: "veh-004",
+            ownerName: "Sarah Jennifer Lim",
+            ownerType: "Tenant",
+            contact: "0927-555-0404",
+            email: "sarah.lim@designlab.ph",
+            blockLot: "Blk 1 Lot 3",
+            street: "Palm Drive",
+            vehicleType: "Motorcycle",
+            plateNumber: "842 NBV",
+            make: "Yamaha",
+            model: "NMAX 155 ABS",
+            year: "2023",
+            color: "Matte Dark Blue",
+            rfid: {
+                tagId: "E280-6901-83FA-6D45",
+                wiegandCode: "FC:084-ID:10495",
+                serialNumber: "SFS1-UHF-2026-00107",
+                frequency: "865-928 MHz (UHF Gen2)",
+                issueDate: "2026-02-10",
+                expiryDate: "2027-02-10",
+                status: "active",
+                tagType: "Headlight RFID Sticker"
+            },
+            registeredAt: "2026-02-10T16:45:00"
+        },
+        {
+            id: "veh-005",
+            ownerName: "Michael Angelo Reyes",
+            ownerType: "Homeowner",
+            contact: "0919-555-0505",
+            email: "m.reyes@techgroup.ph",
+            blockLot: "Blk 9 Lot 14",
+            street: "Pine Street",
+            vehicleType: "MPV / Van",
+            plateNumber: "NFO 3391",
+            make: "Mitsubishi",
+            model: "Xpander Cross",
+            year: "2022",
+            color: "Sunrise Orange",
+            rfid: null, // Pending RFID generation
+            registeredAt: "2026-02-14T10:20:00"
+        }
+    ],
+    gateLogs: [
+        {
+            id: "log-101",
+            timestamp: "2026-11-17 07:42:15",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "NAK 4821",
+            ownerName: "Juan Dela Cruz",
+            vehicleModel: "Toyota Fortuner",
+            rfidTag: "E280-6901-44B2-9A01",
+            direction: "ENTRY",
+            status: "GRANTED",
+            reason: "Valid Resident Tag"
+        },
+        {
+            id: "log-102",
+            timestamp: "2026-11-17 07:55:30",
+            gate: "Gate 1 - Main North Exit",
+            plateNumber: "CBC 7781",
+            ownerName: "Engr. Roberto Tan",
+            vehicleModel: "Ford Ranger",
+            rfidTag: "E280-6901-72D9-1E32",
+            direction: "EXIT",
+            status: "GRANTED",
+            reason: "Valid Resident Tag"
+        },
+        {
+            id: "log-103",
+            timestamp: "2026-11-17 08:12:04",
+            gate: "Gate 2 - East Resident Lane",
+            plateNumber: "DAB 9210",
+            ownerName: "Atty. Maria Santos",
+            vehicleModel: "Honda Civic",
+            rfidTag: "E280-6901-57C3-8B14",
+            direction: "ENTRY",
+            status: "GRANTED",
+            reason: "Valid Resident Tag"
+        },
+        {
+            id: "log-104",
+            timestamp: "2026-11-17 08:35:19",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "UNKNOWN",
+            ownerName: "Visitor / Unregistered",
+            vehicleModel: "Unknown Vehicle",
+            rfidTag: "E280-9999-0000-DEAD",
+            direction: "ENTRY",
+            status: "DENIED",
+            reason: "Unregistered RFID Tag / Please Visit Guardhouse"
+        }
+    ]
+};
