@@ -1953,24 +1953,26 @@ class SFSHOAApp {
     }
 }
 
+// Immediate and reliable global instantiation
 var app = null;
 
-// Ensure global window.app instance for inline HTML event handlers (e.g. onclick="app.foo()")
-function initSFSHOAApp() {
-    try {
-        if (!window.app) {
-            window.app = new SFSHOAApp();
-            app = window.app;
-        }
-    } catch (err) {
-        console.error('Fatal initialization error in SFSHOAApp:', err);
-    }
-    return window.app;
+try {
+    window.app = new SFSHOAApp();
+    app = window.app;
+} catch (err) {
+    console.error('Direct initialization error in SFSHOAApp:', err);
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSFSHOAApp);
-} else {
-    // If DOM is already interactive or complete, boot immediately
-    initSFSHOAApp();
+// Ensure DOM ready fallback
+if (!window.app) {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.app) {
+            try {
+                window.app = new SFSHOAApp();
+                app = window.app;
+            } catch (e) {
+                console.error('DOMContentLoaded initialization error in SFSHOAApp:', e);
+            }
+        }
+    });
 }
