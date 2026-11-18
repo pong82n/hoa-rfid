@@ -1953,11 +1953,14 @@ class SFSHOAApp {
     }
 }
 
+var app = null;
+
 // Ensure global window.app instance for inline HTML event handlers (e.g. onclick="app.foo()")
 function initSFSHOAApp() {
     try {
         if (!window.app) {
             window.app = new SFSHOAApp();
+            app = window.app;
         }
     } catch (err) {
         console.error('Fatal initialization error in SFSHOAApp:', err);
@@ -1971,6 +1974,3 @@ if (document.readyState === 'loading') {
     // If DOM is already interactive or complete, boot immediately
     initSFSHOAApp();
 }
-
-// Global scope alias for backward compatibility
-var app = window.app || null;
