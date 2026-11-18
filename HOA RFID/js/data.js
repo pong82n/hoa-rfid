@@ -142,10 +142,54 @@ const SFS_INITIAL_DATA = {
             vehicleImage: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80",
             rfid: null,
             registeredAt: "2026-02-14T10:20:00"
+        },
+        {
+            id: "veh-006",
+            ownerName: "Raffy Soguilon",
+            ownerType: "Homeowner",
+            contact: "0917-882-9901",
+            email: "raffy.soguilon@sfsph1-hoa.ph",
+            blockLot: "Blk 5 Lot 18",
+            street: "Narra Boulevard",
+            vehicleType: "SUV",
+            plateNumber: "RAF 8299",
+            make: "Toyota",
+            model: "Land Cruiser Prado",
+            year: "2024",
+            color: "Pearl White",
+            ownerImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
+            rfid: {
+                tagId: "E280-6901-94E5-7A21",
+                wiegandCode: "FC:084-ID:10496",
+                serialNumber: "SFS1-UHF-2026-00108",
+                frequency: "865-928 MHz (UHF Gen2)",
+                issueDate: "2026-03-01",
+                expiryDate: "2027-03-01",
+                status: "active",
+                tagType: "Windshield Decal (Anti-Tamper)"
+            },
+            registeredAt: "2026-03-01T08:00:00"
         }
     ],
     // Dedicated Homeowner Barrier Gate Logs
     homeownerLogs: [
+        {
+            id: "hlog-105",
+            date: "2026-11-18",
+            timestamp: "2026-11-18 08:05:22",
+            gate: "Gate 1 - Main North Entrance",
+            plateNumber: "RAF 8299",
+            ownerName: "Raffy Soguilon",
+            ownerImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+            vehicleImage: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80",
+            vehicleModel: "Toyota Land Cruiser Prado",
+            blockLot: "Blk 5 Lot 18",
+            rfidTag: "E280-6901-94E5-7A21",
+            direction: "ENTRY",
+            status: "GRANTED",
+            reason: "Valid Resident Pass"
+        },
         {
             id: "hlog-101",
             date: "2026-11-17",

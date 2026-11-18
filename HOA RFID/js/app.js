@@ -57,6 +57,30 @@ class SFSHOAApp {
                 this.state.vehicles = parsed.vehicles || SFS_INITIAL_DATA.vehicles;
                 this.state.homeownerLogs = parsed.homeownerLogs || SFS_INITIAL_DATA.homeownerLogs || [];
                 this.state.visitorLogs = parsed.visitorLogs || SFS_INITIAL_DATA.visitorLogs || [];
+
+                // Seamlessly merge new baseline seed vehicles (e.g. Raffy Soguilon) if not present in cached storage
+                if (Array.isArray(this.state.vehicles) && Array.isArray(SFS_INITIAL_DATA.vehicles)) {
+                    SFS_INITIAL_DATA.vehicles.forEach(seedVeh => {
+                        const exists = this.state.vehicles.some(v => 
+                            (v.id && v.id === seedVeh.id) || 
+                            (v.ownerName && v.ownerName.toLowerCase() === seedVeh.ownerName.toLowerCase())
+                        );
+                        if (!exists) {
+                            this.state.vehicles.push(JSON.parse(JSON.stringify(seedVeh)));
+                        }
+                    });
+                }
+
+                // Seamlessly merge new baseline homeowner access logs if not present in cached storage
+                if (Array.isArray(this.state.homeownerLogs) && Array.isArray(SFS_INITIAL_DATA.homeownerLogs)) {
+                    SFS_INITIAL_DATA.homeownerLogs.forEach(seedLog => {
+                        const exists = this.state.homeownerLogs.some(l => l.id === seedLog.id);
+                        if (!exists) {
+                            this.state.homeownerLogs.unshift(JSON.parse(JSON.stringify(seedLog)));
+                        }
+                    });
+                }
+                this.saveData();
                 return;
             } catch (e) {
                 console.warn('Failed parsing stored HOA data, loading defaults.', e);
