@@ -107,8 +107,8 @@
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-2.5">
                     <button onclick="app.openVisitorModal('', 'Manual Gate Trigger')" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 font-bold text-xs shadow-sm transition-all">
-                        <i class="fa-solid fa-id-card text-amber-600"></i>
-                        <span>Visitor ID Window</span>
+                        <i class="fa-solid fa-video text-amber-600"></i>
+                        <span>CCTV Visitor Capture</span>
                     </button>
                     <button onclick="app.openPosterModal()" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-semibold text-xs shadow-sm transition-all">
                         <i class="fa-solid fa-qrcode text-sky-600"></i>
@@ -679,11 +679,11 @@
 
                         <button type="button" onclick="app.openVisitorModal('', 'Manual Guard Check')" class="w-full py-3 px-4 rounded-xl border border-amber-500/60 bg-gradient-to-r from-amber-950/60 to-amber-900/60 hover:from-amber-900/80 hover:to-amber-800/80 text-amber-300 font-bold text-xs flex items-center justify-between shadow-md transition-all">
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-id-card text-amber-400 text-base"></i>
-                                <span>Visitor Clearance Window (Captured Plate & ID)</span>
+                                <i class="fa-solid fa-video text-amber-400 text-base"></i>
+                                <span>Manual CCTV Visitor Clearance (Capture Plate & ID)</span>
                             </div>
                             <span class="px-2 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[10px]">
-                                POP-UP
+                                CCTV
                             </span>
                         </button>
 
@@ -1057,112 +1057,249 @@
     </footer>
 
     <!-- ============================================================
-         MODAL: STREAMLINED VISITOR CLEARANCE (CAPTURED PLATE & VALID ID ONLY)
+         MODAL: MANUAL CCTV CAMERA CAPTURE & VISITOR CLEARANCE
          ============================================================ -->
-    <div id="visitorModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border-2 border-amber-400 relative overflow-hidden animate-fadeIn">
+    <div id="visitorModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-slate-900 rounded-3xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl border-2 border-amber-500 relative overflow-hidden animate-fadeIn text-white my-auto max-h-[95vh] flex flex-col">
             
-            <button onclick="app.closeVisitorModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors">
-                <i class="fa-solid fa-xmark"></i>
+            <!-- Close Button -->
+            <button onclick="app.closeVisitorModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center transition-colors z-20">
+                <i class="fa-solid fa-xmark text-sm"></i>
             </button>
 
             <!-- Window Header -->
-            <div class="mb-5 pb-3 border-b border-slate-100 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-lg shrink-0 shadow-md shadow-amber-500/20 font-bold">
-                        <i class="fa-solid fa-id-card"></i>
+            <div class="mb-4 pb-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 pr-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl shrink-0 shadow-lg shadow-amber-500/20 font-bold">
+                        <i class="fa-solid fa-video"></i>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">
-                                AUTOMATIC VISITOR CLEARANCE
+                            <span class="text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded border border-amber-400/40 font-mono">
+                                <i class="fa-solid fa-circle text-[8px] text-red-500 animate-pulse mr-1"></i> MANUAL CCTV CAPTURE
+                            </span>
+                            <span class="text-[10px] font-mono text-slate-400 hidden sm:inline">CAM-01 / CAM-02 ACTIVE</span>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-white mt-0.5 tracking-tight">Manual Visitor Clearance & CCTV Capture</h3>
+                        <p class="text-xs text-slate-400">Capture plate number and driver valid ID through gate CCTV cameras or guardhouse scanner.</p>
+                    </div>
+                </div>
+
+                <!-- Live Camera / Feeds Toggle -->
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="app.toggleWebcam()" id="btnToggleWebcam" class="px-3 py-1.5 rounded-xl border border-sky-500/40 bg-sky-950/60 hover:bg-sky-900/60 text-sky-300 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm">
+                        <i class="fa-solid fa-camera-rotate"></i>
+                        <span id="btnWebcamLabel">Use Device Camera</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick CCTV Scenario Presets -->
+            <div class="flex flex-wrap items-center gap-1.5 mb-4 p-2 bg-slate-950/80 rounded-2xl border border-slate-800">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 font-mono">
+                    <i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Presets:
+                </span>
+                <button type="button" onclick="app.loadCctvScenario(0)" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1 transition-all">
+                    🛵 GrabFood (NBD 3841)
+                </button>
+                <button type="button" onclick="app.loadCctvScenario(1)" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1 transition-all">
+                    🚐 Courier (WXY 9214)
+                </button>
+                <button type="button" onclick="app.loadCctvScenario(2)" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1 transition-all">
+                    🚗 Guest (NDX 7789)
+                </button>
+                <button type="button" onclick="app.loadCctvScenario(3)" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1 transition-all">
+                    🚚 Contractor (CBA 4910)
+                </button>
+            </div>
+
+            <!-- DUAL CCTV FEEDS CONTAINER (GRID) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 flex-1 overflow-y-auto pr-1">
+                
+                <!-- ==========================================
+                     CCTV CAMERA 1: VEHICLE PLATE CAPTURE
+                     ========================================== -->
+                <div class="bg-slate-950 rounded-2xl p-3.5 border border-slate-800 flex flex-col justify-between space-y-3">
+                    <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-800 font-mono">
+                        <div class="flex items-center gap-2 text-sky-400 font-bold">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                            <span>CAM-01: ENTRY LANE ANPR</span>
+                        </div>
+                        <span id="cctvCam1Clock" class="text-slate-500 text-[10px]">LIVE • 1080P</span>
+                    </div>
+
+                    <!-- Viewport Feed -->
+                    <div class="cctv-feed-viewport relative aspect-video rounded-xl bg-slate-950 flex items-center justify-center overflow-hidden group">
+                        <video id="cctvPlateVideo" autoplay playsinline muted class="hidden w-full h-full object-cover"></video>
+                        <img id="cctvPlateFeedImg" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80" alt="CCTV Vehicle Plate Feed">
+                        <canvas id="cctvPlateCanvas" class="hidden"></canvas>
+
+                        <!-- CCTV HUD Overlay -->
+                        <div class="cctv-reticle-box inset-x-8 inset-y-8 flex items-center justify-center">
+                            <span class="text-[9px] font-mono text-sky-300/80 bg-slate-950/70 px-2 py-0.5 rounded tracking-widest uppercase">
+                                [ ALIGN LICENSE PLATE ]
                             </span>
                         </div>
-                        <h3 class="text-lg font-black text-slate-900 mt-0.5">Visitor Clearance & Driver ID Capture</h3>
+
+                        <!-- Flash overlay -->
+                        <div id="cctvPlateFlash" class="absolute inset-0 pointer-events-none opacity-0 z-20"></div>
+
+                        <div class="absolute bottom-2 left-2 z-10 bg-slate-950/80 px-2 py-0.5 rounded text-[10px] font-mono text-emerald-400 border border-emerald-500/30">
+                            <i class="fa-solid fa-satellite-dish mr-1"></i> OPTICAL FEED ACTIVE
+                        </div>
+                    </div>
+
+                    <!-- Capture & Manual Upload Controls -->
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="app.captureCctvPlate()" class="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-extrabold text-xs shadow-md shadow-sky-600/30 flex items-center justify-center gap-2 transition-all transform active:scale-95">
+                                <i class="fa-solid fa-camera text-sm"></i>
+                                <span>CAPTURE PLATE FROM CCTV</span>
+                            </button>
+                            <input type="file" id="uploadPlateInput" accept="image/*" class="hidden" onchange="app.handleCctvFileUpload(event, 'plate')">
+                            <button type="button" onclick="document.getElementById('uploadPlateInput').click()" title="Upload image" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1 transition-all">
+                                <i class="fa-solid fa-upload"></i>
+                            </button>
+                        </div>
+
+                        <!-- Captured Plate Field -->
+                        <div class="p-2.5 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+                            <div class="flex-1">
+                                <label class="block text-[10px] font-mono font-bold text-slate-400 uppercase mb-0.5">
+                                    Captured Plate Number (Verify/Edit):
+                                </label>
+                                <input type="text" id="visitorCapturedPlateInput" value="NBD 3841" class="w-full bg-slate-950 border border-amber-500/60 rounded-lg py-1 px-2.5 text-center font-mono font-black text-xl text-amber-300 tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                <span id="visitorCapturedPlate" class="hidden">NBD 3841</span>
+                            </div>
+                            <span id="cctvPlateStatusBadge" class="shrink-0 px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase font-mono">
+                                CAPTURED
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     CCTV CAMERA 2: DRIVER VALID ID CAPTURE
+                     ========================================== -->
+                <div class="bg-slate-950 rounded-2xl p-3.5 border border-slate-800 flex flex-col justify-between space-y-3">
+                    <div class="flex items-center justify-between text-xs pb-2 border-b border-slate-800 font-mono">
+                        <div class="flex items-center gap-2 text-amber-400 font-bold">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                            <span>CAM-02: COUNTER ID SCANNER</span>
+                        </div>
+                        <span id="cctvCam2Clock" class="text-slate-500 text-[10px]">LIVE • 1080P</span>
+                    </div>
+
+                    <!-- Viewport Feed -->
+                    <div class="cctv-feed-viewport relative aspect-video rounded-xl bg-slate-950 flex items-center justify-center overflow-hidden group">
+                        <video id="cctvIdVideo" autoplay playsinline muted class="hidden w-full h-full object-cover"></video>
+                        <img id="cctvIdFeedImg" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80" alt="CCTV Valid ID Feed">
+                        <canvas id="cctvIdCanvas" class="hidden"></canvas>
+
+                        <!-- CCTV HUD Overlay -->
+                        <div class="cctv-reticle-box inset-x-10 inset-y-6 flex items-center justify-center">
+                            <span class="text-[9px] font-mono text-amber-300/80 bg-slate-950/70 px-2 py-0.5 rounded tracking-widest uppercase">
+                                [ ALIGN DRIVER VALID ID ]
+                            </span>
+                        </div>
+
+                        <!-- Flash overlay -->
+                        <div id="cctvIdFlash" class="absolute inset-0 pointer-events-none opacity-0 z-20"></div>
+
+                        <div class="absolute bottom-2 left-2 z-10 bg-slate-950/80 px-2 py-0.5 rounded text-[10px] font-mono text-amber-400 border border-amber-500/30">
+                            <i class="fa-solid fa-id-card-clip mr-1"></i> SCANNER SENSOR READY
+                        </div>
+                    </div>
+
+                    <!-- Capture & Manual Upload Controls -->
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="app.captureCctvId()" class="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/30 flex items-center justify-center gap-2 transition-all transform active:scale-95">
+                                <i class="fa-solid fa-id-card text-sm"></i>
+                                <span>CAPTURE VALID ID FROM CCTV</span>
+                            </button>
+                            <input type="file" id="uploadIdInput" accept="image/*" class="hidden" onchange="app.handleCctvFileUpload(event, 'id')">
+                            <button type="button" onclick="document.getElementById('uploadIdInput').click()" title="Upload ID" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1 transition-all">
+                                <i class="fa-solid fa-upload"></i>
+                            </button>
+                        </div>
+
+                        <!-- Captured ID Preview Card -->
+                        <div class="p-2 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-2.5">
+                                <img id="visitorCapturedIdImg" class="w-14 h-9 rounded-lg object-cover border border-amber-400 shadow" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Captured ID">
+                                <div>
+                                    <div class="text-[11px] font-bold text-slate-200">Driver License / Gov ID</div>
+                                    <div class="text-[10px] text-slate-400">CCTV Snapshot Verified</div>
+                                </div>
+                            </div>
+                            <span id="cctvIdStatusBadge" class="shrink-0 px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase font-mono">
+                                CAPTURED
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- VISITOR DETAILS FORM (DRIVER, PURPOSE, DESTINATION) -->
+            <div class="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800 mb-4">
+                <div class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-user text-amber-400"></i>
+                    <span>Visitor Clearance Entry Details</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Driver Full Name</label>
+                        <input type="text" id="visitorDriverNameInput" value="Eduardo Ramos" placeholder="e.g. Juan Perez" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Purpose of Visit</label>
+                        <select id="visitorPurposeInput" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <option value="GrabFood Delivery">GrabFood Delivery</option>
+                            <option value="Shopee / Courier Delivery">Shopee / Courier Delivery</option>
+                            <option value="Lalamove Transport">Lalamove Transport</option>
+                            <option value="Personal Guest / Family">Personal Guest / Family</option>
+                            <option value="Contractor / Construction">Contractor / Construction</option>
+                            <option value="Utility Service (Meralco/Maynilad)">Utility Service (Meralco/Maynilad)</option>
+                            <option value="Grab / Taxi Ridehailing">Grab / Taxi Ridehailing</option>
+                            <option value="Official HOA Business">Official HOA Business</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Destination Address / Lot</label>
+                        <input type="text" id="visitorDestinationInput" value="Blk 4 Lot 12, Mahogany St" placeholder="e.g. Blk 2 Lot 8, Acacia Ave" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Vehicle Type</label>
+                        <select id="visitorVehicleTypeInput" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <option value="Motorcycle">Motorcycle / Scooter</option>
+                            <option value="Sedan">Sedan / Hatchback</option>
+                            <option value="SUV">SUV / Crossover</option>
+                            <option value="Van / MPV">Van / MPV</option>
+                            <option value="Pickup Truck">Pickup Truck</option>
+                            <option value="Commercial Truck">Commercial Truck</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- STREAMLINED VISUAL DISPLAY: CAPTURED PLATE & VALID ID ONLY -->
-            <div class="space-y-4">
+            <!-- MODAL ACTION BUTTONS -->
+            <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800">
+                <button type="button" onclick="app.closeVisitorModal()" class="px-5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold text-xs transition-colors">
+                    <i class="fa-solid fa-xmark mr-1.5"></i> Cancel
+                </button>
                 
-                <!-- 1. CAPTURED VEHICLE PLATE NUMBER BADGE -->
-                <div>
-                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-                        <span class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-camera text-sky-600"></i> CAPTURED VEHICLE PLATE NUMBER
-                        </span>
-                        <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            OCR RECOGNIZED
-                        </span>
-                    </div>
-
-                    <div class="bg-slate-900 p-4 rounded-2xl border-2 border-slate-900 shadow-md flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-sm font-bold shrink-0">
-                                <i class="fa-solid fa-tree-city"></i>
-                            </div>
-                            <div>
-                                <div class="text-[9px] font-mono text-slate-400 uppercase">SFSPh1 ACCESS CONTROL</div>
-                                <div id="visitorCapturedPlate" class="text-3xl font-black font-mono tracking-widest text-white">
-                                    NBD 3841
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="text-right">
-                            <span class="px-2.5 py-1 rounded-md text-[10px] font-extrabold bg-amber-500 text-slate-950 uppercase tracking-wider">
-                                VISITOR
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. DRIVER'S CAPTURED VALID ID (LICENSE / GOV ID PHOTO) -->
-                <div>
-                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-                        <span class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-id-card-clip text-amber-600"></i> DRIVER'S VALID ID (CAPTURED)
-                        </span>
-                        <span class="text-[10px] text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                            VERIFIED ID
-                        </span>
-                    </div>
-
-                    <div class="relative rounded-2xl overflow-hidden border-2 border-amber-400 bg-slate-950 aspect-video shadow-lg group">
-                        <img id="visitorCapturedIdImg" class="w-full h-full object-cover" alt="Driver Valid ID" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80">
-                        
-                        <div class="absolute bottom-2.5 left-2.5 bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-amber-400/50 text-xs text-amber-300 font-black flex items-center gap-1.5 shadow-md">
-                            <i class="fa-solid fa-shield-halved text-amber-400"></i>
-                            <span>VALID GOVERNMENT / DRIVER ID</span>
-                        </div>
-
-                        <div class="absolute top-2.5 right-2.5 bg-emerald-500 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-md shadow uppercase tracking-wide">
-                            CLEARANCE READY
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Auto-Fill Data Summary Badge -->
-                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-950 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check text-emerald-600 text-base shrink-0"></i>
-                    <div id="visitorAutoInfoText" class="font-medium text-[11px] truncate flex-1">
-                        Auto-Identified: Eduardo Ramos • GrabFood Delivery to Blk 4 Lot 12, Mahogany St
-                    </div>
-                </div>
-
-                <!-- SINGLE ACTION BUTTON TO REGISTER & OPEN GATE AUTOMATICALLY -->
-                <div class="pt-2 flex items-center gap-3">
-                    <button type="button" onclick="app.closeVisitorModal()" class="w-1/3 py-3 rounded-xl border border-slate-300 text-slate-600 font-bold text-xs hover:bg-slate-100 transition-colors">
-                        Cancel
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="app.resetCctvFeeds()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors border border-slate-700">
+                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Retake Feeds
                     </button>
-                    
-                    <button type="button" onclick="app.autoRegisterAndOpenGate()" class="w-2/3 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition-all transform active:scale-95">
+
+                    <button type="button" onclick="app.manualRegisterAndOpenGate()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/25 flex items-center gap-2 transition-all transform active:scale-95">
                         <i class="fa-solid fa-road-barrier text-base"></i>
-                        <span>Register Visitor & Open Gate</span>
+                        <span>Register Captured Visitor & Open Gate</span>
                     </button>
                 </div>
-
             </div>
 
         </div>

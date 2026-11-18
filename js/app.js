@@ -16,7 +16,16 @@ class SFSHOAApp {
             tempOwnerImage: '',
             tempVehicleImage: '',
             currentAutoVisitor: null,
-            selectedVisitorDate: 'all' // 'all' or specific 'YYYY-MM-DD'
+            selectedVisitorDate: 'all', // 'all' or specific 'YYYY-MM-DD'
+            cctv: {
+                activeScenario: 0,
+                platePhoto: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
+                idPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+                webcamStream: null,
+                isWebcamActive: false,
+                plateCaptured: true,
+                idCaptured: true
+            }
         };
 
         this.audioCtx = null;
@@ -317,61 +326,295 @@ class SFSHOAApp {
     }
 
     // ==========================================
-    // STREAMLINED VISITOR CLEARANCE (CAPTURED PLATE & VALID ID ONLY)
+    // MANUAL CCTV CAMERA CAPTURE & VISITOR CLEARANCE
     // ==========================================
+    getCctvScenarios() {
+        return [
+            {
+                plate: 'NBD 3841',
+                driver: 'Eduardo Ramos',
+                purpose: 'GrabFood Delivery',
+                destination: 'Blk 4 Lot 12, Mahogany St',
+                vehicleType: 'Motorcycle',
+                plateImg: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
+                idImg: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                plate: 'WXY 9214',
+                driver: 'Christian Reyes',
+                purpose: 'Shopee / Courier Delivery',
+                destination: 'Blk 1 Lot 3, Palm Dr',
+                vehicleType: 'Van / MPV',
+                plateImg: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80',
+                idImg: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                plate: 'NDX 7789',
+                driver: 'Beatriz Gomez',
+                purpose: 'Personal Guest / Family',
+                destination: 'Blk 2 Lot 8, Acacia Ave',
+                vehicleType: 'Sedan',
+                plateImg: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80',
+                idImg: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                plate: 'CBA 4910',
+                driver: 'Mario Villanueva',
+                purpose: 'Contractor / Construction',
+                destination: 'Blk 7 Lot 25, Narra Blvd',
+                vehicleType: 'Pickup Truck',
+                plateImg: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80',
+                idImg: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80'
+            }
+        ];
+    }
+
     openVisitorModal(detectedPlate = '', reason = '') {
         const modal = document.getElementById('visitorModal');
         if (!modal) return;
 
-        const samplePlates = ['NBD 3841', 'WXY 9214', 'NDX 7789', 'CBA 4910', 'ZAB 8823', 'NBC 6120'];
-        const sampleIds = [
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80'
-        ];
+        const scenarios = this.getCctvScenarios();
+        let scenarioIdx = 0;
 
-        const sampleVisitors = [
-            { driver: 'Eduardo Ramos', purpose: 'GrabFood Delivery', destination: 'Blk 4 Lot 12, Mahogany St', type: 'Motorcycle' },
-            { driver: 'Beatriz Gomez', purpose: 'Personal Guest / Family', destination: 'Blk 2 Lot 8, Acacia Ave', type: 'Sedan' },
-            { driver: 'Mario Villanueva', purpose: 'Contractor / Service', destination: 'Blk 7 Lot 25, Narra Blvd', type: 'Van / Truck' },
-            { driver: 'Christian Reyes', purpose: 'Lalamove Courier', destination: 'Blk 1 Lot 3, Palm Dr', type: 'Motorcycle' }
-        ];
-
-        const chosenIndex = Math.floor(Math.random() * sampleVisitors.length);
-        const autoData = sampleVisitors[chosenIndex];
-
-        let finalPlate = detectedPlate && detectedPlate !== 'UNKNOWN' && !detectedPlate.includes('UNREGISTERED') 
-            ? detectedPlate 
-            : samplePlates[Math.floor(Math.random() * samplePlates.length)];
-
-        const finalIdPhoto = sampleIds[chosenIndex % sampleIds.length];
-
-        this.state.currentAutoVisitor = {
-            plateNumber: finalPlate,
-            driverIdPhoto: finalIdPhoto,
-            driverName: autoData.driver,
-            purpose: autoData.purpose,
-            destination: autoData.destination,
-            vehicleType: autoData.type
-        };
-
-        const plateEl = document.getElementById('visitorCapturedPlate');
-        if (plateEl) plateEl.textContent = finalPlate;
-
-        const idImgEl = document.getElementById('visitorCapturedIdImg');
-        if (idImgEl) idImgEl.src = finalIdPhoto;
-
-        const autoInfoEl = document.getElementById('visitorAutoInfoText');
-        if (autoInfoEl) {
-            autoInfoEl.textContent = `Auto-Identified: ${autoData.driver} • ${autoData.purpose} to ${autoData.destination}`;
+        if (detectedPlate && detectedPlate !== 'UNKNOWN' && !detectedPlate.includes('UNREGISTERED')) {
+            const foundIdx = scenarios.findIndex(s => s.plate.toLowerCase() === detectedPlate.toLowerCase());
+            scenarioIdx = foundIdx !== -1 ? foundIdx : 0;
+        } else {
+            scenarioIdx = Math.floor(Math.random() * scenarios.length);
         }
+
+        this.loadCctvScenario(scenarioIdx, detectedPlate);
+        this.updateCctvClocks();
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
     }
 
+    updateCctvClocks() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString() + ' • 1080P 30FPS';
+        const cam1 = document.getElementById('cctvCam1Clock');
+        const cam2 = document.getElementById('cctvCam2Clock');
+        if (cam1) cam1.textContent = timeStr;
+        if (cam2) cam2.textContent = timeStr;
+    }
+
+    loadCctvScenario(index, overridePlate = '') {
+        const scenarios = this.getCctvScenarios();
+        const sc = scenarios[index] || scenarios[0];
+        this.state.cctv.activeScenario = index;
+
+        const finalPlate = (overridePlate && overridePlate !== 'UNKNOWN' && !overridePlate.includes('UNREGISTERED'))
+            ? overridePlate
+            : sc.plate;
+
+        this.state.cctv.platePhoto = sc.plateImg;
+        this.state.cctv.idPhoto = sc.idImg;
+        this.state.cctv.plateCaptured = true;
+        this.state.cctv.idCaptured = true;
+
+        const plateInput = document.getElementById('visitorCapturedPlateInput');
+        if (plateInput) plateInput.value = finalPlate;
+
+        const hiddenPlate = document.getElementById('visitorCapturedPlate');
+        if (hiddenPlate) hiddenPlate.textContent = finalPlate;
+
+        const plateImg = document.getElementById('cctvPlateFeedImg');
+        if (plateImg) plateImg.src = sc.plateImg;
+
+        const idImg = document.getElementById('cctvIdFeedImg');
+        if (idImg) idImg.src = sc.idImg;
+
+        const idPreview = document.getElementById('visitorCapturedIdImg');
+        if (idPreview) idPreview.src = sc.idImg;
+
+        const driverInput = document.getElementById('visitorDriverNameInput');
+        if (driverInput) driverInput.value = sc.driver;
+
+        const purposeInput = document.getElementById('visitorPurposeInput');
+        if (purposeInput) purposeInput.value = sc.purpose;
+
+        const destInput = document.getElementById('visitorDestinationInput');
+        if (destInput) destInput.value = sc.destination;
+
+        const typeInput = document.getElementById('visitorVehicleTypeInput');
+        if (typeInput) typeInput.value = sc.vehicleType;
+
+        this.updateCctvBadges(true, true);
+    }
+
+    updateCctvBadges(plateCaptured, idCaptured) {
+        const bPlate = document.getElementById('cctvPlateStatusBadge');
+        if (bPlate) {
+            bPlate.className = plateCaptured
+                ? 'shrink-0 px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase font-mono'
+                : 'shrink-0 px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase font-mono';
+            bPlate.textContent = plateCaptured ? 'CAPTURED' : 'WAITING SNAP';
+        }
+
+        const bId = document.getElementById('cctvIdStatusBadge');
+        if (bId) {
+            bId.className = idCaptured
+                ? 'shrink-0 px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase font-mono'
+                : 'shrink-0 px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase font-mono';
+            bId.textContent = idCaptured ? 'CAPTURED' : 'WAITING SNAP';
+        }
+    }
+
+    captureCctvPlate() {
+        const flash = document.getElementById('cctvPlateFlash');
+        if (flash) {
+            flash.classList.add('cctv-flash-effect');
+            setTimeout(() => flash.classList.remove('cctv-flash-effect'), 400);
+        }
+
+        this.playBeep('scan');
+
+        const video = document.getElementById('cctvPlateVideo');
+        if (this.state.cctv.isWebcamActive && video && !video.classList.contains('hidden')) {
+            const canvas = document.getElementById('cctvPlateCanvas') || document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            this.state.cctv.platePhoto = canvas.toDataURL('image/jpeg', 0.85);
+
+            const img = document.getElementById('cctvPlateFeedImg');
+            if (img) img.src = this.state.cctv.platePhoto;
+        }
+
+        this.state.cctv.plateCaptured = true;
+        this.updateCctvBadges(true, this.state.cctv.idCaptured);
+        this.showToast('Plate number snapshot captured from CCTV CAM-01!', 'success');
+    }
+
+    captureCctvId() {
+        const flash = document.getElementById('cctvIdFlash');
+        if (flash) {
+            flash.classList.add('cctv-flash-effect');
+            setTimeout(() => flash.classList.remove('cctv-flash-effect'), 400);
+        }
+
+        this.playBeep('scan');
+
+        const video = document.getElementById('cctvIdVideo');
+        if (this.state.cctv.isWebcamActive && video && !video.classList.contains('hidden')) {
+            const canvas = document.getElementById('cctvIdCanvas') || document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            this.state.cctv.idPhoto = canvas.toDataURL('image/jpeg', 0.85);
+
+            const img = document.getElementById('cctvIdFeedImg');
+            if (img) img.src = this.state.cctv.idPhoto;
+        }
+
+        const previewImg = document.getElementById('visitorCapturedIdImg');
+        if (previewImg) previewImg.src = this.state.cctv.idPhoto;
+
+        this.state.cctv.idCaptured = true;
+        this.updateCctvBadges(this.state.cctv.plateCaptured, true);
+        this.showToast("Driver's valid ID snapshot captured from CCTV CAM-02!", 'success');
+    }
+
+    handleCctvFileUpload(event, type) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            if (type === 'plate') {
+                this.state.cctv.platePhoto = dataUrl;
+                const img = document.getElementById('cctvPlateFeedImg');
+                if (img) img.src = dataUrl;
+                this.state.cctv.plateCaptured = true;
+                this.updateCctvBadges(true, this.state.cctv.idCaptured);
+                this.showToast('Uploaded plate image loaded into CCTV CAM-01!', 'info');
+            } else if (type === 'id') {
+                this.state.cctv.idPhoto = dataUrl;
+                const img = document.getElementById('cctvIdFeedImg');
+                if (img) img.src = dataUrl;
+                const previewImg = document.getElementById('visitorCapturedIdImg');
+                if (previewImg) previewImg.src = dataUrl;
+                this.state.cctv.idCaptured = true;
+                this.updateCctvBadges(this.state.cctv.plateCaptured, true);
+                this.showToast('Uploaded valid ID loaded into CCTV CAM-02!', 'info');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async toggleWebcam() {
+        const btnLabel = document.getElementById('btnWebcamLabel');
+        const plateVideo = document.getElementById('cctvPlateVideo');
+        const idVideo = document.getElementById('cctvIdVideo');
+        const plateImg = document.getElementById('cctvPlateFeedImg');
+        const idImg = document.getElementById('cctvIdFeedImg');
+
+        if (this.state.cctv.isWebcamActive) {
+            this.stopWebcam();
+            if (btnLabel) btnLabel.textContent = 'Use Device Camera';
+            if (plateVideo) plateVideo.classList.add('hidden');
+            if (idVideo) idVideo.classList.add('hidden');
+            if (plateImg) plateImg.classList.remove('hidden');
+            if (idImg) idImg.classList.remove('hidden');
+            this.showToast('Switched to simulated CCTV feeds.', 'info');
+            return;
+        }
+
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                this.showToast('Webcam not supported by browser. Using CCTV simulation.', 'warning');
+                return;
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
+
+            this.state.cctv.webcamStream = stream;
+            this.state.cctv.isWebcamActive = true;
+
+            if (plateVideo) {
+                plateVideo.srcObject = stream;
+                plateVideo.classList.remove('hidden');
+            }
+            if (idVideo) {
+                idVideo.srcObject = stream;
+                idVideo.classList.remove('hidden');
+            }
+            if (plateImg) plateImg.classList.add('hidden');
+            if (idImg) idImg.classList.add('hidden');
+
+            if (btnLabel) btnLabel.textContent = 'Switch to CCTV Feeds';
+            this.showToast('Live device camera connected to CCTV viewports!', 'success');
+        } catch (err) {
+            console.warn('Webcam access error:', err);
+            this.showToast('Camera access denied or unavailable. Using simulated CCTV feeds.', 'warning');
+            this.stopWebcam();
+        }
+    }
+
+    stopWebcam() {
+        if (this.state.cctv.webcamStream) {
+            this.state.cctv.webcamStream.getTracks().forEach(t => t.stop());
+            this.state.cctv.webcamStream = null;
+        }
+        this.state.cctv.isWebcamActive = false;
+    }
+
+    resetCctvFeeds() {
+        this.loadCctvScenario(this.state.cctv.activeScenario);
+        this.showToast('CCTV camera feeds retaken and reset.', 'info');
+    }
+
     closeVisitorModal() {
+        this.stopWebcam();
+        const btnLabel = document.getElementById('btnWebcamLabel');
+        if (btnLabel) btnLabel.textContent = 'Use Device Camera';
+
         const modal = document.getElementById('visitorModal');
         if (modal) {
             modal.classList.add('hidden');
@@ -379,16 +622,26 @@ class SFSHOAApp {
         }
     }
 
-    // Automatic registration and instant barrier gate clearance
-    autoRegisterAndOpenGate() {
-        const visitor = this.state.currentAutoVisitor || {
-            plateNumber: 'NBD 3841',
-            driverIdPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-            driverName: 'Eduardo Ramos',
-            purpose: 'GrabFood Delivery',
-            destination: 'Blk 4 Lot 12, Mahogany St',
-            vehicleType: 'Motorcycle'
-        };
+    manualRegisterAndOpenGate() {
+        const plateInput = document.getElementById('visitorCapturedPlateInput');
+        const driverInput = document.getElementById('visitorDriverNameInput');
+        const purposeInput = document.getElementById('visitorPurposeInput');
+        const destInput = document.getElementById('visitorDestinationInput');
+        const typeInput = document.getElementById('visitorVehicleTypeInput');
+
+        const plateNumber = plateInput ? plateInput.value.trim().toUpperCase() : 'UNKNOWN';
+        const driverName = driverInput ? driverInput.value.trim() : 'Guest Driver';
+        const purpose = purposeInput ? purposeInput.value : 'Visitor';
+        const destination = destInput ? destInput.value.trim() : 'Phase 1 Resident';
+        const vehicleType = typeInput ? typeInput.value : 'Motorcycle';
+
+        if (!plateNumber) {
+            this.showToast('Please capture or enter the vehicle plate number.', 'warning');
+            return;
+        }
+
+        const idPhoto = this.state.cctv.idPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
+        const vehiclePhoto = this.state.cctv.platePhoto || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80';
 
         const passCode = `VIS-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
         const now = new Date();
@@ -401,12 +654,13 @@ class SFSHOAApp {
             date: dateStr,
             timestamp: timestamp,
             gate: 'Gate 1 - Main North Entrance',
-            plateNumber: visitor.plateNumber,
-            driverName: visitor.driverName,
-            driverIdPhoto: visitor.driverIdPhoto,
-            purpose: visitor.purpose,
-            destination: visitor.destination,
-            vehicleType: visitor.vehicleType,
+            plateNumber: plateNumber,
+            driverName: driverName,
+            driverIdPhoto: idPhoto,
+            vehicleImage: vehiclePhoto,
+            purpose: purpose,
+            destination: destination,
+            vehicleType: vehicleType,
             passNumber: passCode,
             status: 'CLEARED'
         });
@@ -435,7 +689,7 @@ class SFSHOAApp {
             gateArm.classList.add('is-open');
         }
 
-        // 3. Update Guard Monitor Screen showing Plate and Valid ID ONLY
+        // 3. Update Guard Monitor Screen showing CCTV Captured Plate and Valid ID
         if (monitorContent) {
             monitorContent.innerHTML = `
                 <div class="animate-fadeIn p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/80 shadow-2xl relative overflow-hidden">
@@ -443,25 +697,25 @@ class SFSHOAApp {
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-amber-500/30">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
-                            <span class="text-xs font-black tracking-widest text-amber-400 uppercase font-mono">AUTOMATIC VISITOR REGISTRATION • PASS: ${passCode}</span>
+                            <span class="text-xs font-black tracking-widest text-amber-400 uppercase font-mono">MANUAL CCTV VISITOR CLEARANCE • PASS: ${passCode}</span>
                         </div>
                         <span class="px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-950 tracking-wide uppercase shadow-sm flex items-center gap-1.5">
-                            <i class="fa-solid fa-address-card"></i> VISITOR CLEARED
+                            <i class="fa-solid fa-video"></i> CCTV CLEARED
                         </span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
                         <div class="sm:col-span-7 space-y-2">
                             <div class="relative rounded-2xl overflow-hidden border-2 border-amber-400/90 bg-slate-900 aspect-video shadow-xl">
-                                <img src="${visitor.driverIdPhoto}" alt="Driver Valid ID" class="w-full h-full object-cover">
+                                <img src="${idPhoto}" alt="Driver Valid ID" class="w-full h-full object-cover">
                                 
                                 <div class="absolute bottom-2 left-2 bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-amber-500/50 text-xs text-amber-300 font-black flex items-center gap-2">
                                     <i class="fa-solid fa-shield-halved text-amber-400"></i>
-                                    <span>VALID DRIVER ID CAPTURED</span>
+                                    <span>CAM-02: CAPTURED VALID ID</span>
                                 </div>
                                 
                                 <div class="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow uppercase">
-                                    VERIFIED
+                                    CCTV VERIFIED
                                 </div>
                             </div>
                         </div>
@@ -469,11 +723,11 @@ class SFSHOAApp {
                         <div class="sm:col-span-5 space-y-3">
                             <div class="bg-white rounded-2xl p-4 border-2 border-slate-900 shadow-xl text-center">
                                 <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 flex items-center justify-center gap-1.5">
-                                    <i class="fa-solid fa-tree-city text-slate-800"></i>
-                                    <span>CAPTURED VISITOR PLATE</span>
+                                    <i class="fa-solid fa-camera text-sky-600"></i>
+                                    <span>CAM-01 CAPTURED PLATE</span>
                                 </div>
                                 <div class="text-3xl font-black font-mono tracking-widest text-slate-950">
-                                    ${visitor.plateNumber}
+                                    ${plateNumber}
                                 </div>
                                 <div class="mt-2 text-[10px] font-mono text-amber-900 font-bold bg-amber-100 py-1 px-2 rounded-lg border border-amber-300">
                                     ${passCode}
@@ -481,15 +735,15 @@ class SFSHOAApp {
                             </div>
 
                             <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
-                                <div class="font-bold text-white">${visitor.driverName}</div>
-                                <div class="text-[11px] text-amber-300">${visitor.purpose}</div>
-                                <div class="text-[10px] text-slate-400 mt-0.5">Dest: ${visitor.destination}</div>
+                                <div class="font-bold text-white">${driverName}</div>
+                                <div class="text-[11px] text-amber-300">${purpose} • ${vehicleType}</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">Dest: ${destination}</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-                        <span class="text-amber-400"><i class="fa-solid fa-lock-open mr-1"></i> Barrier Raised for Cleared Visitor. Max 20 km/h.</span>
+                        <span class="text-amber-400"><i class="fa-solid fa-lock-open mr-1"></i> Barrier Raised for CCTV Cleared Visitor. Max 20 km/h.</span>
                         <span class="font-mono text-slate-500">Gate 1 North</span>
                     </div>
 
@@ -497,7 +751,7 @@ class SFSHOAApp {
             `;
         }
 
-        this.showToast(`Visitor ${visitor.plateNumber} auto-registered & Barrier Gate Opened!`, 'success');
+        this.showToast(`Visitor ${plateNumber} registered via CCTV & Barrier Gate Opened!`, 'success');
 
         if (window.confetti) {
             window.confetti({ particleCount: 35, spread: 45, origin: { y: 0.8 } });
@@ -511,6 +765,11 @@ class SFSHOAApp {
             }
             this.renderGuardConsoleIdle();
         }, 5500);
+    }
+
+    // Alias for backward compatibility
+    autoRegisterAndOpenGate() {
+        this.manualRegisterAndOpenGate();
     }
 
     // ==========================================

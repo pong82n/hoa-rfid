@@ -244,6 +244,39 @@
     letter-spacing: 0.05em;
 }
 
+/* CCTV Viewfinder & Camera Capture Styling */
+.cctv-feed-viewport {
+    position: relative;
+    overflow: hidden;
+    background: #020617;
+    border: 2px solid #334155;
+    border-radius: 1rem;
+}
+.cctv-feed-viewport::before {
+    content: " ";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+    background-size: 100% 4px;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.6;
+}
+.cctv-reticle-box {
+    position: absolute;
+    border: 2px dashed rgba(56, 189, 248, 0.7);
+    border-radius: 0.5rem;
+    pointer-events: none;
+    z-index: 10;
+}
+.cctv-flash-effect {
+    animation: cctvFlash 0.35s ease-out;
+}
+@keyframes cctvFlash {
+    0% { opacity: 0.95; background-color: #ffffff; }
+    100% { opacity: 0; background-color: transparent; }
+}
+
 /* Print specific styles for printing decals & QR posters */
 @media print {
     body * {
